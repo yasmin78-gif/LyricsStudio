@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QFileDialog, QFormLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
     QMessageBox, QPlainTextEdit, QProgressBar, QPushButton, QScrollArea,
     QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget,
-    QAbstractItemView, QHeaderView, QLayout, QGroupBox,
+    QAbstractItemView, QHeaderView, QLayout, QGroupBox, QStackedWidget,
 )
 
 from lyrics_editor.store import atomic_write
@@ -24,6 +24,7 @@ from .sessions import Sessions
 from . import __version__
 from .updates import check_for_updates
 from .branding import application_icon, set_taskbar_identity
+from .embedded import EditorView
 from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
@@ -317,6 +318,10 @@ class Window(QMainWindow):
         self.update_worker = None
         self.update_url = ''
         self.close_after_update = False
+        self.editor_views = {}
+        self.active_editor_key = None
+        self.editor_operation = False
+        self.close_after_save = False
         self.projects = []
         self.setWindowTitle(f'Lyrics Studio {__version__} · Projekte')
         self.setWindowIcon(application_icon())
@@ -324,7 +329,10 @@ class Window(QMainWindow):
         self.setMinimumSize(900, 640)
         self.setAcceptDrops(True)
         root = QWidget()
-        self.setCentralWidget(root)
+        self.pages = QStackedWidget()
+        self.setCentralWidget(self.pages)
+        self.overview = root
+        self.pages.addWidget(root)
         layout = QVBoxLayout(root)
         layout.setContentsMargins(30, 26, 30, 20)
         layout.setSpacing(20)
@@ -403,7 +411,7 @@ class Window(QMainWindow):
         self.reference_note = label('', 'muted')
         detail.addWidget(self.reference_note)
         self.prepare_button = button('Song vorbereiten', self.prepare)
-        self.open_button = button('Im Browser bearbeiten  ↗', self.open_editor, True)
+        self.open_button = button('Lyrics bearbeiten', self.open_editor, True)
         self.save_button = button('Editor-Entwurf speichern', self.save_project)
         detail.addWidget(self.prepare_button)
         detail.addWidget(self.open_button)
@@ -449,6 +457,19 @@ class Window(QMainWindow):
         update_row.addWidget(self.update_check)
         update_row.addWidget(self.update_open)
         layout.addLayout(update_row)
+        self.editor_page = QWidget()
+        editor_layout = QVBoxLayout(self.editor_page)
+        editor_layout.setContentsMargins(0, 0, 0, 0)
+        editor_toolbar = QHBoxLayout()
+        editor_toolbar.setContentsMargins(14, 8, 14, 8)
+        editor_toolbar.addWidget(button('← Projekte', self.show_overview))
+        self.editor_title = label('', 'muted')
+        editor_toolbar.addWidget(self.editor_title, 1)
+        editor_toolbar.addWidget(button('Entwurf speichern', self.save_active_editor))
+        editor_layout.addLayout(editor_toolbar)
+        self.editor_stack = QStackedWidget()
+        editor_layout.addWidget(self.editor_stack, 1)
+        self.pages.addWidget(self.editor_page)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_live_status)
         self.timer.start(2000)
@@ -651,17 +672,56 @@ class Window(QMainWindow):
             QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
             server = self.sessions.open(project)
             project.update()
-            url = QUrl(f'http://127.0.0.1:{server.server_port}')
-            if not QDesktopServices.openUrl(url):
-                raise ValueError('Der Browser konnte nicht geöffnet werden. Adresse: ' + url.toString())
-            self.message.setText('Der Editor ist geöffnet. Beim Projektwechsel bleibt diese Sitzung erhalten.')
+            key = str(project.directory)
+            if self.active_editor_key and self.active_editor_key != key:
+                self.editor_views[self.active_editor_key].pause()
+            if key not in self.editor_views:
+                view = EditorView(server, self.editor_stack)
+                self.editor_views[key] = view
+                self.editor_stack.addWidget(view)
+            self.active_editor_key = key
+            self.editor_stack.setCurrentWidget(self.editor_views[key])
+            self.editor_title.setText(f'{project.info["name"]} · Lyrics Studio {__version__}')
+            self.pages.setCurrentWidget(self.editor_page)
+            self.setWindowTitle(f'Lyrics Studio {__version__} · {project.info["name"]}')
         except (ValueError, OSError) as exc:
             self.notify_error(exc)
         finally:
             QApplication.restoreOverrideCursor()
 
+    def show_overview(self):
+        if self.active_editor_key:
+            self.editor_views[self.active_editor_key].pause()
+        self.pages.setCurrentWidget(self.overview)
+        self.setWindowTitle(f'Lyrics Studio {__version__} · Projekte')
+        self.refresh()
+
+    def save_active_editor(self):
+        if self.active_editor_key:
+            key = self.active_editor_key
+            self.flush_editor(key, lambda: self.editor_title.setText(self.sessions.servers[key][0].store.title + ' · Entwurf gespeichert'))
+
+    def flush_editor(self, key, success):
+        if self.editor_operation:
+            return
+        view = self.editor_views.get(key)
+        if view is None:
+            success()
+            return
+        self.editor_operation = True
+        def completed(result):
+            self.editor_operation = False
+            if result.get('ok'):
+                success()
+            else:
+                self.notify_error(ValueError(result.get('error', 'Speichern fehlgeschlagen.')))
+        view.flush(True, completed)
+
     def save_project(self):
         project = self.selected()
+        if project and str(project.directory) in self.editor_views:
+            self.flush_editor(str(project.directory), lambda: self.message.setText('Der Editor-Entwurf wurde gespeichert.'))
+            return
         if project and project.ready:
             try:
                 server = self.sessions.open(project)
@@ -677,6 +737,9 @@ class Window(QMainWindow):
         project = self.selected()
         if not project or not project.ready:
             return
+        self.flush_editor(str(project.directory), lambda: self._export_srt(project))
+
+    def _export_srt(self, project):
         dialog = QDialog(self)
         dialog.setWindowTitle('Untertitel exportieren')
         form = QFormLayout(dialog)
@@ -742,6 +805,14 @@ class Window(QMainWindow):
             event.ignore()
 
     def closeEvent(self, event):
+        if self.editor_operation:
+            event.ignore()
+            return
+        if self.close_after_save:
+            self.dispose_editors()
+            self.sessions.close()
+            event.accept()
+            return
         if self.update_worker and self.update_worker.isRunning():
             self.close_after_update = True
             event.ignore()
@@ -752,27 +823,53 @@ class Window(QMainWindow):
             return
         if self.sessions.servers:
             choice = QMessageBox.question(self, 'Ungespeicherte Änderungen',
-                'Die geöffneten Browser-Editoren werden beendet. Vorher alle Editor-Entwürfe speichern? Noch nicht übernommene Eingaben bitte zuerst im Browser übernehmen.',
+                'Vor dem Beenden alle geöffneten Projekte speichern? Auch Eingaben im Editor werden übernommen.',
                 QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
                 QMessageBox.StandardButton.Save)
             if choice == QMessageBox.StandardButton.Cancel:
                 event.ignore()
                 return
             if choice == QMessageBox.StandardButton.Save:
+                if self.editor_views:
+                    event.ignore()
+                    self.save_editors_before_close(list(self.editor_views))
+                    return
                 try:
                     self.sessions.save_all()
                 except (ValueError, OSError) as exc:
                     self.notify_error(exc)
                     event.ignore()
                     return
+        self.dispose_editors()
         self.sessions.close()
         event.accept()
+
+    def save_editors_before_close(self, keys):
+        if keys:
+            key, *remaining = keys
+            self.flush_editor(key, lambda: self.save_editors_before_close(remaining))
+            return
+        try:
+            self.sessions.save_all()
+            self.close_after_save = True
+            self.close()
+        except (ValueError, OSError) as exc:
+            self.notify_error(exc)
+
+    def dispose_editors(self):
+        for view in self.editor_views.values():
+            view.pause()
+            self.editor_stack.removeWidget(view)
+            view.deleteLater()
+        self.editor_views.clear()
+        self.active_editor_key = None
 
 
 def main():
     parser = argparse.ArgumentParser(description='Lyrics Studio Desktop')
     parser.add_argument('--library', type=Path, help='Ordner für persönliche Projekte')
     parser.add_argument('--check', action='store_true', help='Oberfläche und gebündelte Dateien prüfen, dann beenden')
+    parser.add_argument('--check-editor', action='store_true', help='Eingebetteten Editor mit einem vorbereiteten Testprojekt prüfen')
     args = parser.parse_args()
     set_taskbar_identity()
     application = QApplication(sys.argv[:1])
@@ -781,9 +878,42 @@ def main():
     application.setWindowIcon(application_icon())
     application.setStyle('Fusion')
     application.setStyleSheet(STYLE)
-    window = Window(args.library, start_updates=not args.check)
+    window = Window(args.library, start_updates=not (args.check or args.check_editor))
     window.show()
-    if args.check:
+    if args.check_editor:
+        finished = False
+        def finish_editor_check(success):
+            nonlocal finished
+            if finished:
+                return
+            finished = True
+            window.dispose_editors()
+            window.sessions.close()
+            window.close()
+            application.exit(0 if success else 1)
+        def start_editor_check():
+            for row in range(window.table.rowCount()):
+                if window.table.item(row, 0).data(Qt.ItemDataRole.UserRole).ready:
+                    window.table.selectRow(row)
+                    window.open_editor()
+                    break
+            if not window.editor_views:
+                finish_editor_check(False)
+                return
+            view = window.editor_views[window.active_editor_key]
+            timer = QTimer(window)
+            def inspect():
+                if view.loaded:
+                    view.page().runJavaScript("!!window.lyricsDesktop && !!document.querySelector('.lyric-row')", result)
+            def result(ready):
+                if ready:
+                    timer.stop()
+                    finish_editor_check(True)
+            timer.timeout.connect(inspect)
+            timer.start(150)
+            QTimer.singleShot(20000, lambda: finish_editor_check(False))
+        QTimer.singleShot(150, start_editor_check)
+    elif args.check:
         from lyrics_editor.server import ASSETS
         def check():
             valid = all((ASSETS / name).is_file() for name in ('index.html', 'app.js', 'style.css'))

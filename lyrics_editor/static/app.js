@@ -193,4 +193,26 @@ window.addEventListener('resize',draw);
 audio.addEventListener('error',()=>notice('Die WAV-Datei konnte im Browser nicht geladen werden.',true));
 audio.addEventListener('play',updateClock);audio.addEventListener('pause',updateClock);audio.addEventListener('seeked',()=>{updateClock();draw();});
 function animate(){updateClock();if(segment||!audio.paused)draw();requestAnimationFrame(animate);}
+// Desktop embedding retains this page for each project, including unsubmitted form inputs.
+window.lyricsDesktop = {
+  pause() {
+    const stop = () => {stopSegment(); audio.pause(); updateClock();};
+    stop(); queue = queue.then(stop);
+  },
+  flush(save) {
+    queue = queue.then(async () => {
+      busy(true);
+      try {
+        await applyForm();
+        if (save) state = await request('/api/save', {});
+        controls();
+        return {ok: true};
+      } catch (error) {
+        notice(error.message, true);
+        return {ok: false, error: error.message};
+      } finally {busy(false);}
+    });
+    return queue;
+  }
+};
 (async()=>{try{state=await request('/api/state');token=state.token;selected=state.rows.find(r=>!r.deleted)?.id;$('songTitle').textContent=state.title;$('appVersion').textContent='v'+state.app_version;document.title=state.title+' · Lyrics Studio '+state.app_version;$('songDuration').textContent='/ '+format(state.duration);list();renderForm();ensureVisible();waveform=await request('/api/peaks');$('waveLoading').hidden=true;$('waveLoading').style.display='none';draw();notice(`${state.source_count} ASR-Vorschläge geladen. Kein Text und keine Zeitmarke wird automatisch bestätigt.`);requestAnimationFrame(animate);}catch(e){notice(e.message,true);}})();

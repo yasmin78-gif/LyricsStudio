@@ -1,6 +1,6 @@
 # Lyrics Studio
 
-Lokale Desktop-Anwendung zum Vorbereiten, Prüfen und Exportieren zeitlich zugeordneter Lyrics. Der vorhandene Editor läuft weiterhin im Browser.
+Lokale Desktop-Anwendung zum Vorbereiten, Prüfen und Exportieren zeitlich zugeordneter Lyrics. Der vorhandene Webeditor ist direkt in das Desktop-Fenster eingebettet; ein separater Browser ist nicht erforderlich.
 
 ## Desktop starten
 
@@ -20,11 +20,11 @@ Unter macOS/Linux stattdessen .venv/bin/python verwenden. Diese Plattformen sind
 2. Einen Song per Drag & Drop ins Fenster ziehen oder „Neues Projekt“ wählen. Pro Import eine Audiodatei; weitere Songs als weitere Projekte anlegen.
 3. Namen und Sprache wählen, optional den vorhandenen Liedtext einfügen oder als UTF-8-TXT laden. Der Liedtext dient als Referenz; automatische Zuordnung des Referenztextes zum Gesang ist noch nicht implementiert.
 4. Die Vorbereitung erstellt eine PCM16-WAV-Arbeitskopie und erkennt Textpassagen mit Whisper. Sie läuft im Hintergrund und kann abgebrochen werden. Fehlgeschlagene oder abgebrochene Vorbereitungen können erneut gestartet werden.
-5. „Im Browser bearbeiten“ öffnet den vorhandenen Editor. Texte und Zeiten prüfen, korrigieren und ausdrücklich bestätigen. Der Editor arbeitet aktuell mit 24 FPS.
-6. Entwurf im Browser oder in der Desktop-Anwendung speichern. Projekte können später erneut geöffnet werden. Beim Wechsel bleiben laufende Editor-Sitzungen erhalten. Vor dem Beenden alle Eingaben im Browser übernehmen; die Desktop-Anwendung kann nur an den Dienst übergebene Änderungen speichern.
+5. „Lyrics bearbeiten“ öffnet den Editor direkt im Programm. „← Projekte“ führt zurück zur Übersicht. Texte und Zeiten prüfen, korrigieren und ausdrücklich bestätigen. Der Editor arbeitet aktuell mit 24 FPS.
+6. Entwurf im Editor oder über die Desktop-Werkzeugleiste speichern. Dabei werden auch die aktuellen Text- und Zeitfelder übernommen. Beim Wechsel zwischen Projekten bleiben die geöffneten Editor-Seiten samt Eingaben erhalten; die Wiedergabe wird pausiert. Vor dem Beenden kann die Anwendung alle geöffneten Projekte einschließlich noch nicht übernommener Eingaben speichern. Ungültige Eingaben verhindern die Speicherung und bleiben zur Korrektur geöffnet.
 7. Bestätigte Passagen als SRT exportieren, bei Bedarf mit einem Startversatz für ein Intro in der Schnitt-Timeline.
 
-Beim Beenden der Desktop-Anwendung enden die zugehörigen lokalen Editor-Dienste. Alte Browser-Tabs danach schließen und Projekte über die Desktop-Anwendung neu öffnen.
+Beim Beenden der Desktop-Anwendung enden die zugehörigen lokalen Editor-Dienste. Der eigenständige Browser-Start bleibt für Entwicklung und besondere Einsatzzwecke verfügbar.
 
 ## Einstellungen
 
@@ -81,3 +81,7 @@ Beim normalen Programmstart prüft ein Hintergrundthread den neuesten stabilen G
 Das Repository ist derzeit privat. Ohne berechtigten Zugriff kann GitHub keine Releaseinformationen liefern; derselbe HTTP-404-Status tritt auch auf, wenn noch kein Release veröffentlicht wurde. Die Anwendung zeigt dann „Updateprüfung nicht verfügbar“ statt fälschlich „aktuell“. Optional kann für private Releases LYRICS_STUDIO_UPDATE_TOKEN als Umgebungsvariable mit einem GitHub-Token mit Contents-Leseberechtigung gesetzt werden. Der Token wird ausschließlich an die feste GitHub-API-Adresse gesendet und weder eingebaut noch in den Einstellungen gespeichert. Für öffentliche Releases ist kein Token erforderlich.
 
 Die Prüfung verwendet https://api.github.com/repos/yasmin78-gif/LyricsStudio/releases/latest. Songs, Lyrics und Projektpfade werden dabei nicht übertragen.
+
+## Eingebetteter Editor ab 0.3.0
+
+Der Desktop verwendet Qt WebEngine, um die bestehende Oberfläche wiederzuverwenden. Jede geöffnete Projektansicht bleibt bis zum Beenden erhalten. Navigation ist auf den jeweiligen lokalen Editor-Dienst beschränkt. Das Windows-Paket enthält die benötigte WebEngine-Laufzeit und ist deshalb größer als zuvor. Für den Starttest des gebündelten Editors kann --check-editor zusammen mit --library und einer Bibliothek mit synthetischem, vorbereitetem Testprojekt verwendet werden. Dabei wird die Updateprüfung nicht gestartet.
