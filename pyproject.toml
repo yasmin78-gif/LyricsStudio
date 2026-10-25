@@ -21,6 +21,7 @@ py-modules = ["lyrics_sync"]
 
 [tool.setuptools.package-data]
 lyrics_editor = ["static/*"]
+lyrics_studio = ["assets/*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "lyrics_studio.__version__"}

@@ -23,6 +23,7 @@ from .projects import AUDIO_EXTENSIONS, Library, Project, default_library
 from .sessions import Sessions
 from . import __version__
 from .updates import check_for_updates
+from .branding import application_icon, set_taskbar_identity
 from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
@@ -318,6 +319,7 @@ class Window(QMainWindow):
         self.close_after_update = False
         self.projects = []
         self.setWindowTitle(f'Lyrics Studio {__version__} · Projekte')
+        self.setWindowIcon(application_icon())
         self.resize(1180, 780)
         self.setMinimumSize(900, 640)
         self.setAcceptDrops(True)
@@ -772,9 +774,11 @@ def main():
     parser.add_argument('--library', type=Path, help='Ordner für persönliche Projekte')
     parser.add_argument('--check', action='store_true', help='Oberfläche und gebündelte Dateien prüfen, dann beenden')
     args = parser.parse_args()
+    set_taskbar_identity()
     application = QApplication(sys.argv[:1])
     application.setApplicationName('Lyrics Studio')
     application.setApplicationVersion(__version__)
+    application.setWindowIcon(application_icon())
     application.setStyle('Fusion')
     application.setStyleSheet(STYLE)
     window = Window(args.library, start_updates=not args.check)
@@ -783,7 +787,7 @@ def main():
         from lyrics_editor.server import ASSETS
         def check():
             valid = all((ASSETS / name).is_file() for name in ('index.html', 'app.js', 'style.css'))
-            valid = valid and window.open_button.height() >= 40
+            valid = valid and window.open_button.height() >= 40 and not window.windowIcon().isNull()
             window.close()
             application.exit(0 if valid else 1)
         QTimer.singleShot(150, check)
