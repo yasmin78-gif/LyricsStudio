@@ -32,7 +32,7 @@ class EditorView(QWebEngineView):
         self.setAcceptDrops(False)
         self.settings().setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, False)
         self.loadFinished.connect(self._loaded)
-        self.load(QUrl(self.origin))
+        self.load(QUrl(self.origin + '/?desktop=1'))
 
     def _loaded(self, success):
         self.loaded = success

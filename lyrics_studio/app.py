@@ -465,6 +465,7 @@ class Window(QMainWindow):
         editor_toolbar.addWidget(button('← Projekte', self.show_overview))
         self.editor_title = label('', 'muted')
         editor_toolbar.addWidget(self.editor_title, 1)
+        editor_toolbar.addWidget(button('Projektinformationen', self.project_information))
         editor_toolbar.addWidget(button('Entwurf speichern', self.save_active_editor))
         editor_layout.addLayout(editor_toolbar)
         self.editor_stack = QStackedWidget()
@@ -700,6 +701,26 @@ class Window(QMainWindow):
         if self.active_editor_key:
             key = self.active_editor_key
             self.flush_editor(key, lambda: self.editor_title.setText(self.sessions.servers[key][0].store.title + ' · Entwurf gespeichert'))
+
+    def project_information(self):
+        project = Project(self.active_editor_key) if self.active_editor_key else self.selected()
+        if not project:
+            return
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Projektinformationen')
+        dialog.resize(650, 250)
+        form = QFormLayout(dialog)
+        for caption, value in [('Projekt', project.info['name']), ('Songdatei', project.info['source_name']),
+                               ('Projektordner', str(project.directory)),
+                               ('Gespeicherter Entwurf', str(project.state_dir / 'lyrics_editor_draft.json'))]:
+            info = label(value, 'muted')
+            info.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            form.addRow(caption, info)
+        controls = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        controls.button(QDialogButtonBox.StandardButton.Close).setText('Schließen')
+        controls.rejected.connect(dialog.reject)
+        form.addRow(controls)
+        dialog.exec()
 
     def flush_editor(self, key, success):
         if self.editor_operation:

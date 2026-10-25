@@ -85,3 +85,7 @@ Die Prüfung verwendet https://api.github.com/repos/yasmin78-gif/LyricsStudio/re
 ## Eingebetteter Editor ab 0.3.0
 
 Der Desktop verwendet Qt WebEngine, um die bestehende Oberfläche wiederzuverwenden. Jede geöffnete Projektansicht bleibt bis zum Beenden erhalten. Navigation ist auf den jeweiligen lokalen Editor-Dienst beschränkt. Das Windows-Paket enthält die benötigte WebEngine-Laufzeit und ist deshalb größer als zuvor. Für den Starttest des gebündelten Editors kann --check-editor zusammen mit --library und einer Bibliothek mit synthetischem, vorbereitetem Testprojekt verwendet werden. Dabei wird die Updateprüfung nicht gestartet.
+
+## Kompakte Editorleiste ab 0.3.1
+
+Im eingebetteten Editor enthält die untere Leiste nur Speicherstatus, Rückgängig/Wiederholen und „Änderungen verwerfen“. Letzteres ist nur bei einem vorhandenen Entwurf mit neuen Änderungen aktiv und fragt vor dem Laden des gespeicherten Stands nach. Gespeichert wird über die obere Desktop-Werkzeugleiste; Strg+S funktioniert weiterhin. Der interne JSON-Export und Dateipfade sind in der eingebetteten Leiste ausgeblendet. „Projektinformationen“ zeigt die Projekt- und Entwurfspfade bei Bedarf. Der eigenständige Browser-Aufruf behält seine separaten Speicher- und JSON-Exportfunktionen.

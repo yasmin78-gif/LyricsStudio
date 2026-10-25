@@ -95,6 +95,9 @@ class EmbeddedEditorTests(unittest.TestCase):
         self.assertIs(self.window.pages.currentWidget(), self.window.editor_page)
         self.assertFalse(view.page().acceptNavigationRequest(QUrl('https://example.com'), 0, True))
         self.assertEqual(javascript(view.page(), "document.getElementById('songTitle').textContent"), 'Projekt A')
+        for control in ('save', 'export', 'statePath'):
+            self.assertEqual(javascript(view.page(), f"getComputedStyle(document.getElementById('{control}')).display"), 'none')
+        self.assertEqual(javascript(view.page(), "document.getElementById('reload').textContent"), 'Änderungen verwerfen')
 
     def test_project_switch_preserves_unsubmitted_text_and_view(self):
         first = self.open_project()
@@ -124,6 +127,19 @@ class EmbeddedEditorTests(unittest.TestCase):
         self.assertFalse(results[0]['ok'])
         self.assertEqual(javascript(view.page(), "document.getElementById('start').value"), '2')
         self.assertFalse(self.projects[0].path('editor-state/lyrics_editor_draft.json').exists())
+
+    def test_discard_requires_confirmation_and_restores_saved_fields(self):
+        view = self.open_project()
+        self.type_text(view, 'Gespeicherter Text')
+        self.window.save_active_editor()
+        wait_for(lambda: not self.window.editor_operation)
+        self.type_text(view, 'Nicht gespeicherter Text')
+        javascript(view.page(), "window.confirm=()=>false;document.getElementById('reload').click();")
+        QTest.qWait(150)
+        self.assertEqual(javascript(view.page(), "document.getElementById('text').value"), 'Nicht gespeicherter Text')
+        javascript(view.page(), "window.confirm=()=>true;document.getElementById('reload').click();")
+        wait_for(lambda: javascript(view.page(), "document.getElementById('text').value") == 'Gespeicherter Text')
+        self.assertTrue(javascript(view.page(), "document.getElementById('reload').disabled"))
 
     def test_export_first_saves_typed_editor_changes(self):
         view = self.open_project()

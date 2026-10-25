@@ -1,3 +1,3 @@
 """Desktop project management for the local Lyrics Studio."""
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"

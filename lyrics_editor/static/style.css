@@ -11,3 +11,8 @@
 .project strong{overflow-wrap:anywhere}
 
 .app-version{font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}
+
+/* The desktop toolbar owns save/export; retain standalone browser controls. */
+.desktop-mode #save,.desktop-mode #export,.desktop-mode #statePath{display:none}
+.desktop-mode .save-bar{display:flex;flex-direction:row;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:12px 18px}
+.desktop-mode .save-actions{display:flex;gap:8px;flex-wrap:wrap}

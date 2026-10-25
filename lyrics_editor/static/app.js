@@ -1,4 +1,5 @@
 'use strict';
+document.body.classList.toggle('desktop-mode', new URLSearchParams(location.search).get('desktop') === '1');
 const $ = id => document.getElementById(id);
 const audio = $('audio');
 let state, token, selected, waveform, formDirty = false, queue = Promise.resolve();
@@ -52,7 +53,8 @@ function controls() {
   $('confirm').disabled = !row() || row().deleted || !$('acknowledge').checked || !$('reviewer').value.trim();
   $('apply').disabled = !formDirty;
   $('saveStatus').textContent = formDirty || state.dirty ? 'Nicht gespeicherte Änderungen' : state.has_saved_draft ? `Gespeicherter Stand · ${state.confirmed_count} bestätigt` : 'Unveränderte Vorschläge · noch kein Entwurf gespeichert';
-  $('reload').disabled = !state.has_saved_draft;
+  $('reload').disabled = !state.has_saved_draft || !(formDirty || state.dirty);
+  $('reload').title = state.has_saved_draft ? 'Nicht gespeicherte Änderungen nach Rückfrage verwerfen.' : 'Es gibt noch keinen gespeicherten Entwurf.';
   $('statePath').textContent = state.state_file;
 }
 function list() {
@@ -171,7 +173,7 @@ $('remove').onclick=()=>run(async()=>{const r=row();await action(r.deleted?'rest
 $('unconfirm').onclick=()=>run(async()=>{await action('unconfirm');notice('Bestätigung zurückgenommen. Bitte Entwurf speichern.');});
 $('confirm').onclick=()=>run(async()=>{const reviewer=$('reviewer').value,ack=$('acknowledge').checked,allow=$('allowOverlap').checked;await applyForm();state=await request('/api/action',{action:'confirm',id:selected,reviewer,acknowledge:ack,allow_overlap:allow});list();renderForm();notice('Zeile ausdrücklich bestätigt und Entwurf gespeichert. Keine Änderung in Resolve.');});
 $('save').onclick=()=>run(async()=>{await applyForm();state=await request('/api/save',{});list();controls();notice('Entwurf gespeichert. Vorherige Speicherstände bleiben erhalten.');});
-$('reload').onclick=()=>run(async()=>{if((formDirty||state.dirty)&&!window.confirm('Nicht gespeicherte Änderungen verwerfen und den letzten gespeicherten Stand laden?'))return;state=await request('/api/reload',{});if(!state.rows.some(r=>r.id===selected))selected=state.rows.find(r=>!r.deleted)?.id;list();renderForm();notice('Gespeicherten Entwurf erneut geladen.');});
+$('reload').onclick=()=>run(async()=>{if(!window.confirm('Nicht gespeicherte Änderungen verwerfen und den letzten gespeicherten Stand laden?'))return;state=await request('/api/reload',{});if(!state.rows.some(r=>r.id===selected))selected=state.rows.find(r=>!r.deleted)?.id;list();renderForm();notice('Änderungen verworfen. Gespeicherten Entwurf geladen.');});
 for(const kind of ['undo','redo'])$(kind).onclick=()=>run(async()=>{await applyForm();await action(kind);notice(kind==='undo'?'Letzte Änderung rückgängig gemacht.':'Änderung wiederhergestellt.');});
 $('export').onclick=()=>run(async()=>{await applyForm();const out=await request('/api/export',{});state=out.state;controls();notice(`${out.confirmed_count} bestätigte Passagen als Schema-2.0-JSON gespeichert: ${out.path}`);});
 $('search').oninput=list; $('showHidden').onchange=list;
