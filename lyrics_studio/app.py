@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QFileDialog, QFormLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
     QMessageBox, QPlainTextEdit, QProgressBar, QPushButton, QScrollArea,
     QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget,
-    QAbstractItemView, QHeaderView, QLayout,
+    QAbstractItemView, QHeaderView, QLayout, QGroupBox,
 )
 
 from lyrics_editor.store import atomic_write
@@ -21,6 +21,7 @@ from .exports import srt_document
 from .processing import Cancelled, prepare_project
 from .projects import AUDIO_EXTENSIONS, Library, Project, default_library
 from .sessions import Sessions
+from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
           'error': 'Vorbereitung fehlgeschlagen', 'cancelled': 'Abgebrochen'}
@@ -78,18 +79,21 @@ def button(text, callback=None, primary=False):
     return item
 
 
-def choose_file(parent, field, title, file_filter):
-    path, _ = QFileDialog.getOpenFileName(parent, title, field.text(), file_filter)
+def choose_file(parent, field, title, file_filter, executable=False):
+    models = model_candidates(field.text()) if not executable else []
+    fallback = models[0].parent if models else None
+    start = chooser_start(field.text(), executable=executable, fallback=fallback)
+    path, _ = QFileDialog.getOpenFileName(parent, title, start, file_filter)
     if path:
         field.setText(path)
 
 
-def file_row(parent, field, title, file_filter):
+def file_row(parent, field, title, file_filter, executable=False):
     row = QWidget()
     layout = QHBoxLayout(row)
     layout.setContentsMargins(0, 0, 0, 0)
     layout.addWidget(field, 1)
-    layout.addWidget(button('Auswählen …', lambda: choose_file(parent, field, title, file_filter)))
+    layout.addWidget(button('Auswählen …', lambda: choose_file(parent, field, title, file_filter, executable)))
     return row
 
 
@@ -97,26 +101,118 @@ class SettingsDialog(QDialog):
     def __init__(self, settings, parent):
         super().__init__(parent)
         self.setWindowTitle('Lyrics Studio · Einstellungen')
-        self.resize(720, 330)
+        self.resize(680, 440)
         layout = QVBoxLayout(self)
         layout.addWidget(label('Lokale Spracherkennung', 'heading'))
-        layout.addWidget(label('Whisper verarbeitet Songs auf diesem Rechner. Wähle FFmpeg mit Whisper-Unterstützung und ein whisper.cpp-Modell.', 'muted'))
+        layout.addWidget(label('Wähle aus, welche lokale Audio-Verarbeitung und welches Whisper-Modell du verwenden möchtest.', 'muted'))
         form = QFormLayout()
-        self.ffmpeg = QLineEdit(settings.value('ffmpeg', 'ffmpeg'))
-        self.model = QLineEdit(settings.value('model', os.environ.get('LYRICS_STUDIO_MODEL', '')))
+        self.ffmpeg = QComboBox()
+        self.model = QComboBox()
+        self.ffmpeg.setMinimumWidth(320)
+        self.model.setMinimumWidth(320)
+        self.preferred_ffmpeg = settings.value('ffmpeg', 'ffmpeg')
+        self.preferred_model = settings.value('model', os.environ.get('LYRICS_STUDIO_MODEL', ''))
+        self.known_ffmpeg = settings.value('ffmpeg_locations', [], type=list)
+        self.known_models = settings.value('model_locations', [], type=list)
         self.gpu = QCheckBox('Grafikkarte verwenden')
         self.gpu.setChecked(settings.value('gpu', True, type=bool))
-        form.addRow('FFmpeg', file_row(self, self.ffmpeg, 'FFmpeg auswählen', 'Programme (*)'))
-        form.addRow('Whisper-Modell', file_row(self, self.model, 'Whisper-Modell auswählen', 'Whisper-Modelle (*.bin)'))
+        form.addRow('Audio-Verarbeitung', self.ffmpeg)
+        form.addRow('Whisper-Modell', self.model)
         form.addRow('', self.gpu)
         layout.addLayout(form)
-        layout.addWidget(label('Das Modell wird einmalig bereitgestellt und von allen Projekten gemeinsam genutzt.', 'muted'))
+        self.availability = label('', 'muted')
+        layout.addWidget(self.availability)
+        layout.addWidget(button('Erneut nach verfügbaren Einträgen suchen', self.refresh_choices))
+        self.advanced = QGroupBox('Weitere Installation hinzufügen')
+        self.advanced.setCheckable(True)
+        advanced_layout = QVBoxLayout(self.advanced)
+        self.advanced_content = QWidget()
+        additions = QVBoxLayout(self.advanced_content)
+        additions.setContentsMargins(0, 0, 0, 0)
+        additions.addWidget(label('Falls eine Installation an einem anderen Ort liegt, kannst du sie einmalig zur Auswahl hinzufügen.', 'muted'))
+        additions.addWidget(button('FFmpeg-Version hinzufügen …', lambda: self.add_resource(False)))
+        additions.addWidget(button('Whisper-Modell hinzufügen …', lambda: self.add_resource(True)))
+        advanced_layout.addWidget(self.advanced_content)
+        self.advanced.toggled.connect(self.advanced_content.setVisible)
+        self.advanced.setChecked(False)
+        layout.addWidget(self.advanced)
+        layout.addWidget(label('Die Auswahl gilt für alle Projekte. Deine Songs bleiben auf diesem Rechner.', 'muted'))
         controls = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         controls.button(QDialogButtonBox.StandardButton.Save).setText('Speichern')
         controls.button(QDialogButtonBox.StandardButton.Cancel).setText('Abbrechen')
-        controls.accepted.connect(self.accept)
+        self.save_control = controls.button(QDialogButtonBox.StandardButton.Save)
+        controls.accepted.connect(self.accept_selection)
         controls.rejected.connect(self.reject)
         layout.addWidget(controls)
+        self.ffmpeg.currentIndexChanged.connect(self.update_availability)
+        self.model.currentIndexChanged.connect(self.update_availability)
+        self.refresh_choices()
+
+    def populate_choice(self, combo, paths, preferred, model=False):
+        combo.blockSignals(True)
+        combo.clear()
+        resolved = existing_file(preferred, executable=not model)
+        names = [resource_name(path, model) for path in paths]
+        for number, (path, name) in enumerate(zip(paths, names), 1):
+            if names.count(name) > 1:
+                name += f' · Installation {number}'
+            combo.addItem(name, str(path))
+            combo.setItemData(combo.count() - 1, str(path), Qt.ItemDataRole.ToolTipRole)
+        if not paths:
+            combo.addItem('Kein Whisper-Modell gefunden' if model else 'Kein FFmpeg gefunden', '')
+        selected = combo.findData(str(resolved)) if resolved else -1
+        combo.setCurrentIndex(selected if selected >= 0 else 0)
+        combo.setEnabled(bool(paths))
+        combo.blockSignals(False)
+
+    def refresh_choices(self):
+        ffmpeg = self.ffmpeg.currentData() or self.preferred_ffmpeg
+        model = self.model.currentData() or self.preferred_model
+        self.populate_choice(self.ffmpeg, ffmpeg_candidates(ffmpeg, self.known_ffmpeg), ffmpeg)
+        self.populate_choice(self.model, model_candidates(model, self.known_models), model, model=True)
+        self.update_availability()
+
+    def update_availability(self, *_):
+        missing = []
+        if not self.ffmpeg.currentData():
+            missing.append('Keine lokale Audio-Verarbeitung gefunden.')
+        if not self.model.currentData():
+            missing.append('Noch kein Whisper-Modell gefunden.')
+        self.availability.setText(' '.join(missing) + ' Füge eine vorhandene Installation hinzu.' if missing
+                                  else 'Vorhandene Einträge sind ausgewählt. Du kannst die Auswahl direkt speichern.')
+        self.save_control.setEnabled(not missing)
+        for combo in (self.ffmpeg, self.model):
+            combo.setToolTip(combo.currentData() or '')
+
+    def add_resource(self, model):
+        combo = self.model if model else self.ffmpeg
+        start = chooser_start(combo.currentData(), executable=not model)
+        title = 'Whisper-Modell hinzufügen' if model else 'FFmpeg-Version hinzufügen'
+        file_filter = 'Whisper-Modelle (*.bin)' if model else 'FFmpeg (ffmpeg.exe ffmpeg);;Programme (*)'
+        path, _ = QFileDialog.getOpenFileName(self, title, start, file_filter)
+        if not path:
+            return
+        found = existing_file(path, executable=not model)
+        if not found or model and found.suffix.lower() != '.bin':
+            self.availability.setText('Diese Datei ist nicht verfügbar. Bitte eine vorhandene Installation auswählen.')
+            return
+        if model:
+            self.preferred_model = str(found)
+            self.known_models.append(str(found))
+        else:
+            self.preferred_ffmpeg = str(found)
+            self.known_ffmpeg.append(str(found))
+        # Use the newly added file even when another entry was selected before.
+        paths = model_candidates(str(found), self.known_models) if model else ffmpeg_candidates(str(found), self.known_ffmpeg)
+        self.populate_choice(combo, paths, str(found), model=model)
+        self.update_availability()
+
+    def accept_selection(self):
+        if not existing_file(self.ffmpeg.currentData(), executable=True) or not existing_file(self.model.currentData()):
+            self.availability.setText('Ein ausgewählter Eintrag ist nicht mehr vorhanden. Bitte erneut suchen.')
+            self.save_control.setEnabled(False)
+            return
+        self.accept()
 
 
 class NewProjectDialog(QDialog):
@@ -405,8 +501,10 @@ class Window(QMainWindow):
     def configure(self):
         dialog = SettingsDialog(self.settings, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.settings.setValue('ffmpeg', dialog.ffmpeg.text().strip())
-            self.settings.setValue('model', dialog.model.text().strip())
+            self.settings.setValue('ffmpeg', dialog.ffmpeg.currentData())
+            self.settings.setValue('model', dialog.model.currentData())
+            self.settings.setValue('ffmpeg_locations', dialog.known_ffmpeg)
+            self.settings.setValue('model_locations', dialog.known_models)
             self.settings.setValue('gpu', dialog.gpu.isChecked())
             self.settings.sync()
 

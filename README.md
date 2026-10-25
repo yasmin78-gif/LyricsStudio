@@ -16,7 +16,7 @@ Unter macOS/Linux stattdessen .venv/bin/python verwenden. Diese Plattformen sind
 
 ## Mit einem Song arbeiten
 
-1. Unter Einstellungen FFmpeg mit Whisper-Filter und ein vorhandenes whisper.cpp-Modell (.bin) auswählen. Bei Problemen mit der Grafikkarte die GPU-Option deaktivieren. Die Anwendung lädt keine Modelle automatisch herunter.
+1. Unter Einstellungen aus den Listen gefundener FFmpeg-Installationen und Whisper-Modelle auswählen. Vorhandene Einträge werden automatisch vorausgewählt. Bei Problemen mit der Grafikkarte die GPU-Option deaktivieren. Die Anwendung lädt keine Modelle automatisch herunter.
 2. Einen Song per Drag & Drop ins Fenster ziehen oder „Neues Projekt“ wählen. Pro Import eine Audiodatei; weitere Songs als weitere Projekte anlegen.
 3. Namen und Sprache wählen, optional den vorhandenen Liedtext einfügen oder als UTF-8-TXT laden. Der Liedtext dient als Referenz; automatische Zuordnung des Referenztextes zum Gesang ist noch nicht implementiert.
 4. Die Vorbereitung erstellt eine PCM16-WAV-Arbeitskopie und erkennt Textpassagen mit Whisper. Sie läuft im Hintergrund und kann abgebrochen werden. Fehlgeschlagene oder abgebrochene Vorbereitungen können erneut gestartet werden.
@@ -25,6 +25,13 @@ Unter macOS/Linux stattdessen .venv/bin/python verwenden. Diese Plattformen sind
 7. Bestätigte Passagen als SRT exportieren, bei Bedarf mit einem Startversatz für ein Intro in der Schnitt-Timeline.
 
 Beim Beenden der Desktop-Anwendung enden die zugehörigen lokalen Editor-Dienste. Alte Browser-Tabs danach schließen und Projekte über die Desktop-Anwendung neu öffnen.
+
+## Einstellungen
+
+FFmpeg und Whisper-Modelle werden als direkt auswählbare Listen mit Namen und Versions- beziehungsweise Größenangaben angezeigt. Die Suche berücksichtigt gespeicherte Einträge, den Programmsuchpfad, bekannte Installations- und Modellordner sowie unter Windows WinGet-Installationen. Ein bereits ausgewählter Eintrag bleibt beim erneuten Suchen erhalten, sofern er noch vorhanden ist. Nicht jede FFmpeg-Installation enthält Whisper; die benötigte Unterstützung wird beim Start der Song-Verarbeitung geprüft.
+
+Unter „Weitere Installation hinzufügen“ lassen sich zusätzliche lokale Programme oder Modelle einmalig ergänzen. Diese Orte werden gespeichert und bei späteren Suchen berücksichtigt. Technische Dateipfade sind als Tooltips verfügbar. Wenn eine erforderliche Komponente fehlt, zeigt die Liste das ausdrücklich an; eine unvollständige Auswahl lässt sich nicht speichern. Modelle werden nicht automatisch heruntergeladen.
+
 
 ## Projektdateien
 
