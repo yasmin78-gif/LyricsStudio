@@ -15,6 +15,7 @@ import uuid
 import wave
 
 from .timebase import validate_interval, frame_interval, frames_to_seconds, seconds_to_frame
+from lyrics_studio import __version__
 
 
 class Conflict(ValueError):
@@ -177,7 +178,7 @@ class Store:
         return doc
 
     def state(self):
-        return dict(revision=self.revision, saved_revision=self.saved_revision,
+        return dict(app_version=__version__, revision=self.revision, saved_revision=self.saved_revision,
             dirty=self.revision != self.saved_revision, has_saved_draft=self.path.exists(), rows=copy.deepcopy(self.rows),
             title=self.title, duration=self.duration, fps=self.fps, audio_name=self.audio.name,
             can_undo=bool(self.undo_stack), can_redo=bool(self.redo_stack),

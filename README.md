@@ -70,3 +70,14 @@ Der Browser-Editor kann weiterhin unabhängig gestartet werden:
     python -B -m lyrics_editor --data "/absoluter/pfad/lyrics_timing.json" --state-dir "/absoluter/pfad/editor-state"
 
 Anschließend http://127.0.0.1:8765 öffnen. Mehr zur weiteren Planung in docs/ROADMAP.md.
+
+
+## Version und Updateprüfung
+
+Die Versionsnummer steht zentral in lyrics_studio/__init__.py. Desktop, Browser und Python-Paket verwenden denselben Wert. Für eine neue Veröffentlichung wird dieser Wert erhöht und ein GitHub-Release mit passendem Tag (zum Beispiel v0.2.0) angelegt.
+
+Beim normalen Programmstart prüft ein Hintergrundthread den neuesten stabilen GitHub-Release. Ein Hinweis mit „Update öffnen“ führt zur Release-Seite. Es gibt keinen automatischen Download und keine automatische Installation. „Nach Updates suchen“ startet eine manuelle Prüfung; die automatische Prüfung kann in den Einstellungen abgeschaltet werden. Offline- oder Zugriffsfehler blockieren die Projektarbeit nicht. Der technische Starttest --check erzeugt keine Netzwerkanfrage.
+
+Das Repository ist derzeit privat. Ohne berechtigten Zugriff kann GitHub keine Releaseinformationen liefern; derselbe HTTP-404-Status tritt auch auf, wenn noch kein Release veröffentlicht wurde. Die Anwendung zeigt dann „Updateprüfung nicht verfügbar“ statt fälschlich „aktuell“. Optional kann für private Releases LYRICS_STUDIO_UPDATE_TOKEN als Umgebungsvariable mit einem GitHub-Token mit Contents-Leseberechtigung gesetzt werden. Der Token wird ausschließlich an die feste GitHub-API-Adresse gesendet und weder eingebaut noch in den Einstellungen gespeichert. Für öffentliche Releases ist kein Token erforderlich.
+
+Die Prüfung verwendet https://api.github.com/repos/yasmin78-gif/LyricsStudio/releases/latest. Songs, Lyrics und Projektpfade werden dabei nicht übertragen.

@@ -9,3 +9,5 @@
 .row-status{display:inline-flex;align-items:center;gap:6px;flex-shrink:0}
 .row-status .dot{flex-shrink:0}
 .project strong{overflow-wrap:anywhere}
+
+.app-version{font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}

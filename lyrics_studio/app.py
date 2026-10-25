@@ -21,6 +21,8 @@ from .exports import srt_document
 from .processing import Cancelled, prepare_project
 from .projects import AUDIO_EXTENSIONS, Library, Project, default_library
 from .sessions import Sessions
+from . import __version__
+from .updates import check_for_updates
 from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
@@ -116,6 +118,8 @@ class SettingsDialog(QDialog):
         self.known_models = settings.value('model_locations', [], type=list)
         self.gpu = QCheckBox('Grafikkarte verwenden')
         self.gpu.setChecked(settings.value('gpu', True, type=bool))
+        self.startup_updates = QCheckBox('Beim Programmstart nach Updates suchen')
+        self.startup_updates.setChecked(settings.value('check_updates_startup', True, type=bool))
         form.addRow('Audio-Verarbeitung', self.ffmpeg)
         form.addRow('Whisper-Modell', self.model)
         form.addRow('', self.gpu)
@@ -137,6 +141,7 @@ class SettingsDialog(QDialog):
         self.advanced.setChecked(False)
         layout.addWidget(self.advanced)
         layout.addWidget(label('Die Auswahl gilt für alle Projekte. Deine Songs bleiben auf diesem Rechner.', 'muted'))
+        layout.addWidget(self.startup_updates)
         controls = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         controls.button(QDialogButtonBox.StandardButton.Save).setText('Speichern')
         controls.button(QDialogButtonBox.StandardButton.Cancel).setText('Abbrechen')
@@ -293,16 +298,26 @@ class ImportWorker(QThread):
             self.completed.emit(str(exc), False)
 
 
+class UpdateWorker(QThread):
+    completed = Signal(object)
+
+    def run(self):
+        self.completed.emit(check_for_updates())
+
+
 class Window(QMainWindow):
-    def __init__(self, library=None, settings=None):
+    def __init__(self, library=None, settings=None, start_updates=False):
         super().__init__()
         self.settings = settings if settings is not None else QSettings('LyricsStudio', 'Desktop')
         self.library = Library(library or self.settings.value('library', str(default_library())))
         self.sessions = Sessions()
         self.worker = None
         self.processing_id = None
+        self.update_worker = None
+        self.update_url = ''
+        self.close_after_update = False
         self.projects = []
-        self.setWindowTitle('Lyrics Studio · Projekte')
+        self.setWindowTitle(f'Lyrics Studio {__version__} · Projekte')
         self.resize(1180, 780)
         self.setMinimumSize(900, 640)
         self.setAcceptDrops(True)
@@ -313,7 +328,11 @@ class Window(QMainWindow):
         layout.setSpacing(20)
         header = QHBoxLayout()
         brand = QVBoxLayout()
-        brand.addWidget(label('≋  Lyrics Studio', 'brand'))
+        brand_heading = QHBoxLayout()
+        brand_heading.addWidget(label('≋  Lyrics Studio', 'brand'))
+        brand_heading.addWidget(label(f'v{__version__}', 'muted'))
+        brand_heading.addStretch()
+        brand.addLayout(brand_heading)
         brand.addWidget(label('Deine Songs. Dein Timing. Dein Projekt.', 'muted'))
         header.addLayout(brand, 1)
         local_badge = label('●  Lokal auf deinem Rechner', 'muted')
@@ -419,10 +438,49 @@ class Window(QMainWindow):
         self.library_label = label('', 'muted')
         self.library_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         layout.addWidget(self.library_label)
+        update_row = QHBoxLayout()
+        self.update_status = label('Updateprüfung bereit.', 'muted')
+        update_row.addWidget(self.update_status, 1)
+        self.update_check = button('Nach Updates suchen', self.check_updates)
+        self.update_open = button('Update öffnen ↗', self.open_update)
+        self.update_open.hide()
+        update_row.addWidget(self.update_check)
+        update_row.addWidget(self.update_open)
+        layout.addLayout(update_row)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_live_status)
         self.timer.start(2000)
         self.refresh()
+        if start_updates and self.settings.value('check_updates_startup', True, type=bool):
+            QTimer.singleShot(300, self.check_updates)
+        elif start_updates:
+            self.update_status.setText('Automatische Updateprüfung deaktiviert.')
+
+    def check_updates(self):
+        if self.update_worker and self.update_worker.isRunning():
+            return
+        self.update_status.setText('Suche nach einer neueren Version …')
+        self.update_check.setEnabled(False)
+        self.update_open.hide()
+        self.update_worker = UpdateWorker(self)
+        self.update_worker.completed.connect(self.show_update_result)
+        self.update_worker.finished.connect(self.update_finished)
+        self.update_worker.start()
+
+    def show_update_result(self, result):
+        self.update_status.setText(result.message)
+        self.update_url = result.url if result.status == 'available' else ''
+        self.update_open.setVisible(bool(self.update_url))
+
+    def update_finished(self):
+        self.update_check.setEnabled(True)
+        if self.close_after_update:
+            self.close_after_update = False
+            QTimer.singleShot(0, self.close)
+
+    def open_update(self):
+        if self.update_url:
+            QDesktopServices.openUrl(QUrl(self.update_url))
 
     def selected(self):
         row = self.table.currentRow()
@@ -506,6 +564,7 @@ class Window(QMainWindow):
             self.settings.setValue('ffmpeg_locations', dialog.known_ffmpeg)
             self.settings.setValue('model_locations', dialog.known_models)
             self.settings.setValue('gpu', dialog.gpu.isChecked())
+            self.settings.setValue('check_updates_startup', dialog.startup_updates.isChecked())
             self.settings.sync()
 
     def change_library(self):
@@ -681,6 +740,10 @@ class Window(QMainWindow):
             event.ignore()
 
     def closeEvent(self, event):
+        if self.update_worker and self.update_worker.isRunning():
+            self.close_after_update = True
+            event.ignore()
+            return
         if self.worker and self.worker.isRunning():
             self.message.setText('Bitte die Verarbeitung abschließen lassen oder zuerst „Abbrechen“ wählen.')
             event.ignore()
@@ -711,9 +774,10 @@ def main():
     args = parser.parse_args()
     application = QApplication(sys.argv[:1])
     application.setApplicationName('Lyrics Studio')
+    application.setApplicationVersion(__version__)
     application.setStyle('Fusion')
     application.setStyleSheet(STYLE)
-    window = Window(args.library)
+    window = Window(args.library, start_updates=not args.check)
     window.show()
     if args.check:
         from lyrics_editor.server import ASSETS

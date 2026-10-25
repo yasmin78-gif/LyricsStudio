@@ -12,6 +12,7 @@ from PySide6.QtCore import QUrl, QEventLoop, QTimer
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtTest import QTest
 from PySide6.QtWebEngineWidgets import QWebEngineView
+from lyrics_studio import __version__
 from lyrics_studio.projects import Library
 from lyrics_studio.processing import make_document
 from lyrics_studio.sessions import Sessions
@@ -49,7 +50,8 @@ with tempfile.TemporaryDirectory(prefix='lyrics-browser-test-') as tmp:
     until(page,"document.querySelectorAll('.lyric-row').length === 3 && document.getElementById('waveLoading').hidden")
     state=json.loads(js(page,"JSON.stringify({title:document.getElementById('songTitle').textContent,tab:document.title,rows:[...document.querySelectorAll('.lyric-row')].map(r=>({status:r.className,color:getComputedStyle(r.querySelector('.dot')).backgroundColor,border:getComputedStyle(r).borderLeftColor}))})"))
     assert state['title']==project.info['name'],state
-    assert state['tab']==project.info['name']+' · Lyrics Studio',state
+    assert state['tab']==project.info['name']+' · Lyrics Studio '+__version__,state
+    assert js(page,"document.getElementById('appVersion').textContent")=='v'+__version__
     for row in state['rows']:
         status=next(s for s in ('unreviewed','editing','confirmed') if s in row['status'])
         legend=js(page,f"getComputedStyle(document.querySelector('.legend .dot.{status}')).backgroundColor")
