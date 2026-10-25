@@ -54,7 +54,10 @@ class Store:
             raise ValueError('Der Editor benötigt Lyrics-Schema 2.0.')
         from lyrics_sync import validate
         validate(self.base)
-        self.audio = Path(self.base['audio']['path']).resolve(strict=True)
+        audio_path = Path(self.base['audio']['path'])
+        if not audio_path.is_absolute():
+            audio_path = self.data_path.parent / audio_path
+        self.audio = audio_path.resolve(strict=True)
         if digest(self.audio) != self.base['audio']['sha256']:
             raise ValueError('Die Audiodatei passt nicht zum gespeicherten SHA-256.')
         self.audio_stat = (self.audio.stat().st_size, self.audio.stat().st_mtime_ns)
@@ -307,6 +310,8 @@ class Store:
             self._check(revision)
             self._save()
             doc = self.document()
+            # Export is outside the source directory; keep its audio reference usable.
+            doc['audio']['path'] = str(self.audio)
             path = self.directory / ('lyrics_reviewed-' + self.revision + '.json')
             payload = encoded(doc)
             if path.exists():

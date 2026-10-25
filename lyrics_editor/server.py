@@ -70,7 +70,7 @@ def make_server(data, state_dir, port=8765):
         protocol_version = 'HTTP/1.1'
 
         def log_message(self, format, *args):
-            if not args or '/api/audio' not in str(args[0]):
+            if sys.stderr is not None and (not args or '/api/audio' not in str(args[0])):
                 super().log_message(format, *args)
 
         def response(self, status, payload, content_type='application/json; charset=utf-8', extra=None):

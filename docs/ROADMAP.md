@@ -1,5 +1,16 @@
 # Entwicklungsplan
 
+## Stand 0.1.0
+- Implementiert: PySide6-Desktop, Projektbibliothek, Song-Import per Dateiauswahl und Drag & Drop.
+- Implementiert: Whisper über FFmpeg, Verarbeitung im Hintergrund, Fortschritt und Abbruch.
+- Implementiert: bestehender Browser-Editor pro Projekt, Speichern und Wiederöffnen, portable Projektordner.
+- Implementiert: SRT-Export bestätigter Passagen mit Startversatz.
+- Windows-Programm mit PyInstaller gebaut; Tests mit synthetischen Daten und lokaler Whisper-Import geprüft.
+- Offen: bearbeitbare DaVinci-Titel, Referenztext-Ausrichtung, Modellbereitstellung und Installationsprogramme.
+- macOS und Linux noch nicht praktisch abgenommen.
+
+Die folgenden Abschnitte enthalten den Gesamtplan einschließlich bereits begonnener Schritte.
+
 ## 1. Eigenständige Grundlage
 - Bestehenden Editor mit synthetischen Beispielen und unabhängigen Tests absichern.
 - Portable Audio- und Projektpfade definieren.

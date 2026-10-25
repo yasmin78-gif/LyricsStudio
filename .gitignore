@@ -40,5 +40,14 @@ lyrics*.md
 *.gguf
 *.bin
 *.log
+*.srt
+*.opus
+*.aif
+*.wma
+*.safetensors
+*.onnx
+*.lock
+project.json
+reference.txt
 .DS_Store
 Thumbs.db
