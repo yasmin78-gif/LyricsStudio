@@ -11,11 +11,14 @@ class Sessions:
     def open(self, project):
         key = str(project.directory)
         if key not in self.servers:
-            server = make_server(project.data, project.state_dir, port=0)
+            server = make_server(project.data, project.state_dir, port=0, title=project.info['name'])
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
             self.servers[key] = (server, thread)
-        return self.servers[key][0]
+        server = self.servers[key][0]
+        with server.store.lock:
+            server.store.title = project.info['name']
+        return server
 
     def dirty(self):
         result = []

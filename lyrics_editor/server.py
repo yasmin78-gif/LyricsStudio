@@ -44,7 +44,7 @@ def peaks(store):
     return result
 
 
-def make_server(data, state_dir, port=8765):
+def make_server(data, state_dir, port=8765, title=None):
     directory = Path(state_dir).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     lease = (directory / '.session.lock').open('a+b')
@@ -59,7 +59,7 @@ def make_server(data, state_dir, port=8765):
         else:
             import fcntl
             fcntl.flock(lease.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        store = Store(data, state_dir)
+        store = Store(data, state_dir, title=title)
         waveform = peaks(store)
     except Exception:
         lease.close()

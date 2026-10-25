@@ -61,11 +61,13 @@ function list() {
   $('lyricsList').replaceChildren();
   for (const r of rows) {
     const button = document.createElement('button'); button.type = 'button';
-    button.className = 'lyric-row' + (r.id === selected ? ' selected' : '') + (r.deleted ? ' hidden-row' : '');
+    button.className = 'lyric-row ' + r.status + (r.id === selected ? ' selected' : '') + (r.deleted ? ' hidden-row' : '');
     button.dataset.id = r.id; button.setAttribute('aria-pressed', String(r.id === selected));
     const meta = document.createElement('span'); meta.className = 'row-meta';
     const times = document.createElement('span'); times.textContent = `${format(r.start)} – ${format(r.end)}`;
-    const status = document.createElement('span'); status.textContent = r.deleted ? 'Ausgeblendet' : statuses[r.status];
+    const status = document.createElement('span'); status.className = 'row-status';
+    const dot = document.createElement('span'); dot.className = 'dot ' + (r.deleted ? 'unreviewed' : r.status); dot.setAttribute('aria-hidden', 'true');
+    status.append(dot, document.createTextNode(r.deleted ? 'Ausgeblendet' : statuses[r.status]));
     meta.append(times, status);
     const text = document.createElement('span'); text.className = 'line'; text.textContent = r.text;
     const id = document.createElement('span'); id.className = 'row-id'; id.textContent = r.id + (r.repeat_of ? ' · Wiederholung' : '');
@@ -191,4 +193,4 @@ window.addEventListener('resize',draw);
 audio.addEventListener('error',()=>notice('Die WAV-Datei konnte im Browser nicht geladen werden.',true));
 audio.addEventListener('play',updateClock);audio.addEventListener('pause',updateClock);audio.addEventListener('seeked',()=>{updateClock();draw();});
 function animate(){updateClock();if(segment||!audio.paused)draw();requestAnimationFrame(animate);}
-(async()=>{try{state=await request('/api/state');token=state.token;selected=state.rows.find(r=>!r.deleted)?.id;$('songTitle').textContent=state.title;$('songDuration').textContent='/ '+format(state.duration);list();renderForm();ensureVisible();waveform=await request('/api/peaks');$('waveLoading').hidden=true;$('waveLoading').style.display='none';draw();notice(`${state.source_count} ASR-Vorschläge geladen. Kein Text und keine Zeitmarke wird automatisch bestätigt.`);requestAnimationFrame(animate);}catch(e){notice(e.message,true);}})();
+(async()=>{try{state=await request('/api/state');token=state.token;selected=state.rows.find(r=>!r.deleted)?.id;$('songTitle').textContent=state.title;document.title=state.title+' · Lyrics Studio';$('songDuration').textContent='/ '+format(state.duration);list();renderForm();ensureVisible();waveform=await request('/api/peaks');$('waveLoading').hidden=true;$('waveLoading').style.display='none';draw();notice(`${state.source_count} ASR-Vorschläge geladen. Kein Text und keine Zeitmarke wird automatisch bestätigt.`);requestAnimationFrame(animate);}catch(e){notice(e.message,true);}})();

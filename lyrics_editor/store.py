@@ -46,7 +46,7 @@ def now():
 
 
 class Store:
-    def __init__(self, data, state_dir):
+    def __init__(self, data, state_dir, title=None):
         self.data_path = Path(data).resolve(strict=True)
         self.base_hash = digest(self.data_path)
         self.base = json.loads(self.data_path.read_text(encoding='utf-8'))
@@ -58,6 +58,7 @@ class Store:
         if not audio_path.is_absolute():
             audio_path = self.data_path.parent / audio_path
         self.audio = audio_path.resolve(strict=True)
+        self.title = title or self.audio.stem
         if digest(self.audio) != self.base['audio']['sha256']:
             raise ValueError('Die Audiodatei passt nicht zum gespeicherten SHA-256.')
         self.audio_stat = (self.audio.stat().st_size, self.audio.stat().st_mtime_ns)
@@ -178,7 +179,7 @@ class Store:
     def state(self):
         return dict(revision=self.revision, saved_revision=self.saved_revision,
             dirty=self.revision != self.saved_revision, has_saved_draft=self.path.exists(), rows=copy.deepcopy(self.rows),
-            title=self.audio.stem, duration=self.duration, fps=self.fps, audio_name=self.audio.name,
+            title=self.title, duration=self.duration, fps=self.fps, audio_name=self.audio.name,
             can_undo=bool(self.undo_stack), can_redo=bool(self.redo_stack),
             source_count=len(self.base['recognized_occurrences']), state_file=str(self.path),
             confirmed_count=sum(r['status'] == 'confirmed' and not r['deleted'] for r in self.rows))
