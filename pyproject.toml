@@ -6,8 +6,14 @@ build-backend = "setuptools.build_meta"
 name = "lyrics-studio"
 dynamic = ["version"]
 description = "Lokales Lyrics Studio mit Desktop-Projektverwaltung"
+license = "MIT"
+license-files = ["LICENSE", "legal/*.txt", "legal/*.md"]
 requires-python = ">=3.11"
 dependencies = ["PySide6>=6.8,<7"]
+
+[project.urls]
+Repository = "https://github.com/yasmin78-gif/LyricsStudio"
+Issues = "https://github.com/yasmin78-gif/LyricsStudio/issues"
 
 [project.scripts]
 lyrics-studio = "lyrics_studio.app:main"

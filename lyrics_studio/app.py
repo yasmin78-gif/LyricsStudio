@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import threading
 
-from PySide6.QtCore import QSettings, Qt, QThread, QTimer, QUrl, Signal
+from PySide6.QtCore import QFile, QSettings, Qt, QThread, QTimer, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
@@ -26,6 +26,7 @@ from .updates import check_for_updates
 from .branding import application_icon, set_taskbar_identity
 from .embedded import EditorView
 from .resolve_export import export_package, lua_string
+from .legal_info import FFMPEG_URL, MODEL_URL, show_legal
 from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
@@ -130,6 +131,11 @@ class SettingsDialog(QDialog):
         self.availability = label('', 'muted')
         layout.addWidget(self.availability)
         layout.addWidget(button('Erneut nach verfügbaren Einträgen suchen', self.refresh_choices))
+        downloads = QHBoxLayout()
+        downloads.addWidget(button('FFmpeg herunterladen ↗', lambda: QDesktopServices.openUrl(QUrl(FFMPEG_URL))))
+        downloads.addWidget(button('Whisper-Modell herunterladen ↗', lambda: QDesktopServices.openUrl(QUrl(MODEL_URL))))
+        layout.addLayout(downloads)
+        layout.addWidget(label('Externe Downloads: FFmpeg mit Whisper-Filter (Windows: Full Build) und ein GGML-Modell als .bin wählen. Heruntergeladene Archive entpacken, dann erneut suchen oder die Dateien hinzufügen. Diese Komponenten werden nicht mitgeliefert.', 'muted'))
         self.advanced = QGroupBox('Weitere Installation hinzufügen')
         self.advanced.setCheckable(True)
         advanced_layout = QVBoxLayout(self.advanced)
@@ -375,6 +381,7 @@ class Window(QMainWindow):
         local_badge.setMinimumWidth(200)
         header.addWidget(local_badge)
         header.addWidget(button('Einstellungen', self.configure))
+        header.addWidget(button('Lizenzen', lambda: show_legal(self)))
         layout.addLayout(header)
         toolbar = QHBoxLayout()
         toolbar.addWidget(label('PROJEKTBIBLIOTHEK', 'eyebrow'))
@@ -453,6 +460,8 @@ class Window(QMainWindow):
         self.folder_button = button('Projektdateien öffnen  ↗', self.open_folder)
         detail.addStretch()
         detail.addWidget(self.folder_button)
+        self.delete_button = button('Projekt löschen …', self.delete_project)
+        detail.addWidget(self.delete_button)
         splitter.addWidget(right)
         splitter.setSizes([720, 360])
         layout.addWidget(splitter, 1)
@@ -579,6 +588,7 @@ class Window(QMainWindow):
         self.export_button.setEnabled(ready)
         self.title_export.setEnabled(ready and not busy)
         self.folder_button.setEnabled(project is not None)
+        self.delete_button.setEnabled(project is not None and not busy)
         if project:
             self.title.setText(project.info['name'])
             self.title.setTextFormat(Qt.TextFormat.PlainText)
@@ -913,6 +923,34 @@ class Window(QMainWindow):
         close.rejected.connect(dialog.reject)
         layout.addWidget(close)
         dialog.exec()
+
+    def delete_project(self):
+        project = self.selected()
+        if not project or self.editor_operation or self.worker and self.worker.isRunning():
+            return
+        answer = QMessageBox.question(self, 'Projekt löschen',
+            f'„{project.info["name"]}“ mit allen Projektdateien und Entwürfen in den Papierkorb verschieben?\n\n'
+            'Die ursprüngliche Songdatei bleibt erhalten. Offene Browser-Editoren dieses Projekts werden beendet; ungespeicherte Eingaben gehen verloren.',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel)
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            self.library.validate_delete(project)
+            view = self.editor_views.pop(str(project.directory), None)
+            if view:
+                view.pause()
+                self.editor_stack.removeWidget(view)
+                view.deleteLater()
+                if self.active_editor_key == str(project.directory):
+                    self.active_editor_key = None
+                    self.pages.setCurrentWidget(self.overview)
+            self.sessions.close_project(project)
+            self.library.delete(project, QFile.moveToTrash)
+            self.message.setText('Projekt in den Papierkorb verschoben. Die ursprüngliche Songdatei wurde nicht verändert.')
+            self.refresh()
+        except (ValueError, OSError) as exc:
+            self.notify_error(exc)
 
     def open_folder(self):
         project = self.selected()

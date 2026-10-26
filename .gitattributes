@@ -4,3 +4,4 @@
 *.css text eol=lf
 *.html text eol=lf
 *.md text eol=lf
+legal/** -text -whitespace

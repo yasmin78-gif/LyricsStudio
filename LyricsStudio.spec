@@ -1,12 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
+import os
+exec(Path('tools/bundle_policy.py').read_text(encoding='utf-8'))
 
 
 a = Analysis(
     ['lyrics_studio/launcher.py'],
     pathex=['.'],
     binaries=[],
-    datas=[('lyrics_editor/static', 'lyrics_editor/static'), ('lyrics_studio/assets', 'lyrics_studio/assets')],
+    datas=[('lyrics_editor/static', 'lyrics_editor/static'), ('lyrics_studio/assets', 'lyrics_studio/assets'),
+           ('legal', 'legal'), ('LICENSE', '.'), ('README.md', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -17,9 +20,8 @@ a = Analysis(
 )
 # Do not bundle Poppler's versioned ICU under the Windows system ICU name.
 # An unrelated Poppler directory on PATH can otherwise break Qt at startup.
-a.binaries = [entry for entry in a.binaries
-              if not (Path(entry[0]).name.lower().startswith(('icuuc', 'icudt'))
-                      and 'poppler' in [part.lower() for part in Path(entry[1]).parts])]
+a.binaries = release_binaries(a.binaries)
+a.datas = release_data(a.datas)
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -32,8 +34,8 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    console=False,
+    upx=False,
+    console=os.environ.get('LYRICS_STUDIO_BUILD_CONSOLE') == '1',
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
@@ -45,7 +47,7 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='LyricsStudio',
 )

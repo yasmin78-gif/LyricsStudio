@@ -1,0 +1,13 @@
+{
+  "0cc51f9148bb1c7d.txt": "pyside-setup-everywhere-src-6.12.0/LICENSES/LicenseRef-Qt-Commercial.txt",
+  "09bc73c74ef117cb.txt": "pyside-setup-everywhere-src-6.12.0/sources/pyside6/COPYING",
+  "8f9f8c89f2ed48ef.txt": "pyside-setup-everywhere-src-6.12.0/sources/pyside6/PySide6/licensecomment.txt",
+  "e39170f4a1aac4d2.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6/COPYING",
+  "3f89972c52ea8bd3.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6/COPYING.libsample",
+  "f7c4c45e99331204.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6/COPYING.libshiboken",
+  "5831eff14a2aecf7.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6/libshiboken/bufferprocs_py37.h",
+  "2253989844b8b25e.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6/libshiboken/qt_attribution.json",
+  "ab54946fea613f00.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6/shibokenmodule/files.dir/shibokensupport/signature/PSF-3.7.0.txt",
+  "ce8749854e0948b3.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6/shibokenmodule/files.dir/shibokensupport/signature/qt_attribution.json",
+  "92ae1f6582ceb63b.txt": "pyside-setup-everywhere-src-6.12.0/sources/shiboken6_generator/ApiExtractor/COPYING"
+}

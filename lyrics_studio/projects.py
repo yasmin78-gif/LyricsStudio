@@ -104,6 +104,26 @@ class Library:
         projects.sort(key=lambda p: p.info.get('updated_at', ''), reverse=True)
         return projects, errors
 
+    def validate_delete(self, project):
+        directory = project.directory.resolve(strict=True)
+        if directory.parent != self.root or directory == self.root:
+            raise ValueError('Nur Projekte direkt in der aktuellen Bibliothek können gelöscht werden.')
+        fresh = Project(directory)
+        if fresh.info['id'] != project.info['id']:
+            raise ValueError('Das Projekt hat sich geändert. Bitte die Liste neu laden.')
+        source = Path(fresh.info.get('source_path', '')).resolve()
+        if source.is_relative_to(directory):
+            raise ValueError('Die ursprüngliche Songdatei liegt im Projektordner. Bitte zuerst außerhalb sichern.')
+        return directory
+
+    def delete(self, project, move_to_trash):
+        directory = self.validate_delete(project)
+        result = move_to_trash(str(directory))
+        # PySide6 versions expose either bool or (bool, trash_path).
+        success = result[0] if isinstance(result, tuple) else result
+        if not success or directory.exists():
+            raise OSError('Der Projektordner konnte nicht in den Papierkorb verschoben werden. Es wurde nicht dauerhaft gelöscht.')
+
     def create(self, name, audio, reference_text='', language='auto'):
         name = name.strip()
         source = Path(audio).expanduser().resolve(strict=True)

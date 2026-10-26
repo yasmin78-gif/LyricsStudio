@@ -1,0 +1,10 @@
+{
+  "376cdd4d42705d85.txt": "qtshadertools-everywhere-src-6.12.0/LICENSES/LicenseRef-MIT-Khronos-old.txt",
+  "2aff36a97a186e07.txt": "qtshadertools-everywhere-src-6.12.0/LICENSES/LicenseRef-Qt-Commercial.txt",
+  "91f4dbab2ca45f7f.txt": "qtshadertools-everywhere-src-6.12.0/src/3rdparty/SPIRV-Cross/COPYRIGHT.txt",
+  "fa1c43cfbd9c3fa0.txt": "qtshadertools-everywhere-src-6.12.0/src/3rdparty/SPIRV-Cross/LICENSE",
+  "7c0eb7d6bbbf78d0.txt": "qtshadertools-everywhere-src-6.12.0/src/3rdparty/SPIRV-Cross/qt_attribution.json",
+  "02eb452021e6c758.txt": "qtshadertools-everywhere-src-6.12.0/src/3rdparty/glslang/COPYRIGHT.txt",
+  "75c03f5543ccb0c9.txt": "qtshadertools-everywhere-src-6.12.0/src/3rdparty/glslang/LICENSE.txt",
+  "6d7177f76d24bfb5.txt": "qtshadertools-everywhere-src-6.12.0/src/3rdparty/glslang/qt_attribution.json"
+}

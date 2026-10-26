@@ -1,0 +1,74 @@
+[
+  {
+    "file": "qtbase-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/qtbase-everywhere-src-6.12.0.tar.xz",
+    "sha256": "a951bd163c7b80fc6b8c88d7668fb56abf91c152373e13c10666763238131307",
+    "size": 51220268,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qtbase-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "qtdeclarative-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/qtdeclarative-everywhere-src-6.12.0.tar.xz",
+    "sha256": "311f3a2603e1973bb59baef9dfa740a376de713157d4782ee043681e889c9260",
+    "size": 39221652,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qtdeclarative-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "qtpositioning-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/qtpositioning-everywhere-src-6.12.0.tar.xz",
+    "sha256": "b060d410fac7413b05a0e7938bbf3325f7ad08d7df14af3956270f0696e76763",
+    "size": 662600,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qtpositioning-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "qtwebchannel-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/qtwebchannel-everywhere-src-6.12.0.tar.xz",
+    "sha256": "9afdfb64855b33c1cc16a4fdce69a556876f0d5b9df79d88de7306ffa2dca327",
+    "size": 194940,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qtwebchannel-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "qtsvg-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/qtsvg-everywhere-src-6.12.0.tar.xz",
+    "sha256": "e4ab39534ec97987b1b9b60ef7f4d3253d5912a69f8c713a01753174a4029331",
+    "size": 2341876,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qtsvg-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "qtshadertools-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/qtshadertools-everywhere-src-6.12.0.tar.xz",
+    "sha256": "c7d84f436e1aaef39fdcadebf2bd71bdf24dc69497e13f2e0198873cbbfea2ab",
+    "size": 1244684,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qtshadertools-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "qttranslations-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/qt/6.12/6.12.0/submodules/qttranslations-everywhere-src-6.12.0.tar.xz",
+    "sha256": "85929c0c30d6f273f23bd879bb69803ea17b010ab73cab2f8abf95357f6f6bbb",
+    "size": 1745884,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qttranslations-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "pyside-setup-everywhere-src-6.12.0.tar.xz",
+    "upstream": "https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.12.0-src/pyside-setup-everywhere-src-6.12.0.tar.xz",
+    "sha256": "099c1a597cf33c1b000e11cf68a0b82d216fb802bf81726efc720394f10c7751",
+    "size": 18211772,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/pyside-setup-everywhere-src-6.12.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  },
+  {
+    "file": "qtwebengine-everywhere-src-6.140.0.tar.xz",
+    "upstream": "https://download.qt.io/online/qtsdkrepository/all_os/extensions/qtwebengine/6120/61400/src_doc_examples/extensions.qtwebengine.6120.61400.src/6.12.0-0-202609281005qtwebengine-everywhere-src-6.140.0.tar.xz",
+    "sha256": "141e9b230e5ec9ee65a7357ca4b87d702e4badc515289eeade1047a788bb96e7",
+    "size": 584649116,
+    "release": "https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/qtwebengine-everywhere-src-6.140.0.tar.xz",
+    "modifications": "None; unmodified upstream archive"
+  }
+]

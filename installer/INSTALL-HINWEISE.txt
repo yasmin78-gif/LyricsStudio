@@ -1,0 +1,18 @@
+Lyrics Studio - erste öffentliche Windows-Version
+
+FFmpeg mit Whisper-Unterstützung und ein Whisper-Modell werden separat benötigt.
+Die Downloadbuttons in den Einstellungen öffnen die Anbieter-Webseiten.
+Es werden keine Songs oder Modelle mitgeliefert und keine Songs hochgeladen.
+
+Die Oberfläche nutzt PySide6/Qt unter LGPLv3 und Qt WebEngine/Chromium mit weiteren
+Open-Source-Lizenzen. Vollständige Hinweise liegen im installierten Ordner
+_internal\legal und sind über "Lizenzen" im Programm erreichbar. Die zugehörigen
+Quellarchive werden beim GitHub-Release bereitgestellt. Austausch und Änderung
+der Bibliotheken gemäß ihren Lizenzen bleiben erlaubt.
+
+Der Installer benötigt keine Administratorrechte. Persönliche Projekte und
+Einstellungen werden bei einer Deinstallation nicht gelöscht.
+
+Dieses Paket ist nicht mit einem kommerziellen Codesignaturzertifikat signiert.
+Windows kann deshalb einen Hinweis auf einen unbekannten Herausgeber anzeigen.
+Prüfsummen zum Download stehen beim GitHub-Release bereit.

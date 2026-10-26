@@ -33,6 +33,14 @@ class Sessions:
             with server.store.lock:
                 server.store.save(server.store.revision)
 
+    def close_project(self, project):
+        entry = self.servers.pop(str(project.directory), None)
+        if entry:
+            server, thread = entry
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
     def close(self):
         for server, thread in self.servers.values():
             server.shutdown()
