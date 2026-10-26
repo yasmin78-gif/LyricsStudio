@@ -48,7 +48,7 @@ Original-Songs bleiben unverändert. Vor erfolgreicher Vorbereitung muss die urs
 ## Stand und Grenzen
 
 - Implementiert: Projektverwaltung, Drag & Drop, lokale Whisper-Verarbeitung mit FFmpeg, Fortschritt, Abbruch, erneutes Öffnen, Editor-Anbindung, Speichern und SRT-Export.
-- In Vorbereitung: Export bearbeitbarer Titel für DaVinci Resolve, automatische Referenztext-Ausrichtung, komfortable Modellbereitstellung und Installationsprogramme.
+- In Vorbereitung: automatische Referenztext-Ausrichtung, komfortable Modellbereitstellung und Installationsprogramme.
 - Whisper-Ergebnisse sind Vorschläge. Der SRT-Export verwendet ausschließlich ausdrücklich bestätigte Passagen.
 - Für Whisper benötigt FFmpeg einen Build mit aktiviertem Whisper-Filter. Ein gewöhnlicher FFmpeg-Build genügt eventuell nicht. Siehe https://ffmpeg.org/ffmpeg-filters.html#whisper.
 
@@ -89,3 +89,16 @@ Der Desktop verwendet Qt WebEngine, um die bestehende Oberfläche wiederzuverwen
 ## Kompakte Editorleiste ab 0.3.1
 
 Im eingebetteten Editor enthält die untere Leiste nur Speicherstatus, Rückgängig/Wiederholen und „Änderungen verwerfen“. Letzteres ist nur bei einem vorhandenen Entwurf mit neuen Änderungen aktiv und fragt vor dem Laden des gespeicherten Stands nach. Gespeichert wird über die obere Desktop-Werkzeugleiste; Strg+S funktioniert weiterhin. Der interne JSON-Export und Dateipfade sind in der eingebetteten Leiste ausgeblendet. „Projektinformationen“ zeigt die Projekt- und Entwurfspfade bei Bedarf. Der eigenständige Browser-Aufruf behält seine separaten Speicher- und JSON-Exportfunktionen.
+
+
+## Bearbeitbare DaVinci-Titel ab 0.4.0
+
+„Bearbeitbare Titel · DaVinci“ exportiert ausdrücklich bestätigte Passagen als portables Paket. Aktuelle Editor-Eingaben werden zuerst gespeichert. Wähle Zielbildrate (24, 25, 30, 50 oder 60 FPS), Full HD oder UHD und bei Bedarf einen Song-Startversatz. Der Song kann als Audiospur mitgenommen werden. Der Export läuft im Hintergrund und ist abbrechbar. Jede Ausgabe erhält einen eigenen Ordner; bestehende Ausgaben werden nicht überschrieben.
+
+Nach dem Export zeigt die Anwendung den fertigen Importbefehl mit Kopierbutton. Öffne das gewünschte Projekt in Resolve, öffne Arbeitsbereich / Workspace → Konsole / Console und wähle Lua. Füge den dofile-Befehl ein und drücke Enter. Der Import legt eine eigene Timeline und einen eigenen Medienordner an. Jede Passage wird eine separate Fusion-Komposition mit dem Text+-Knoten Lyrics_Text. Text, Schrift, Position und Animation können in Fusion bearbeitet werden. Überlappende Passagen liegen auf getrennten Videospuren und werden vertikal versetzt. Die Clips lassen sich in andere Timelines mit gleicher Bildrate kopieren.
+
+Die Clipzeiten werden für die gewählte Bildrate nach außen auf Frames abgebildet. Der Import prüft jede Clipgrenze und den Text nach dem Anlegen. Die neue Timeline beginnt bei 00:00:00:00; der gewählte Song-Versatz wird darauf angewendet. Bestehende Timelines werden nicht verändert. Nach dem Import das Resolve-Projekt selbst speichern.
+
+Den gesamten Exportordner behalten: Er enthält die transparenten Titelmedien als Bildsequenz, den optionalen Song, Daten, Importscript und nach dem Import die nativen Kompositionen. Nach Verschieben des Pakets den Pfad im dofile-Befehl anpassen. Ein erfolgreicher Import erzeugt IMPORT-ERGEBNIS.txt. Bei einem Importfehler bleibt eine neue, als UNVOLLSTAENDIG gekennzeichnete Timeline zur Prüfung erhalten; Details stehen in IMPORT-FEHLER.txt. Ein bereits oder unvollständig importiertes Paket wird nicht automatisch erneut eingefügt. Die Ausgabe enthält außerdem eine .gitignore zum Schutz privater Lyrics und Medien.
+
+Der Import wurde mit synthetischen Texten, Unicode, Zeilenumbrüchen, überlappenden Passagen, Song-Audio, 24/25 FPS, Startversatz und Full HD/UHD in DaVinci Resolve Studio 21.1.1 auf Windows geprüft. Andere Resolve-Versionen und Plattformen sind noch nicht praktisch abgenommen. 23,976/29,97-FPS-Timelines werden in dieser Version noch nicht unterstützt.

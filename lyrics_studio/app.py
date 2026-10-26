@@ -25,6 +25,7 @@ from . import __version__
 from .updates import check_for_updates
 from .branding import application_icon, set_taskbar_identity
 from .embedded import EditorView
+from .resolve_export import export_package, lua_string
 from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
@@ -307,6 +308,31 @@ class UpdateWorker(QThread):
         self.completed.emit(check_for_updates())
 
 
+class TitleExportWorker(QThread):
+    progress = Signal(str, int)
+    completed = Signal(str, bool)
+
+    def __init__(self, project, document, audio, parent_directory, options, parent):
+        super().__init__(parent)
+        self.project = project
+        self.document = document
+        self.audio = audio
+        self.parent_directory = parent_directory
+        self.options = options
+        self.cancel = threading.Event()
+        self.output = None
+
+    def run(self):
+        try:
+            self.output = export_package(self.document, self.project.info['name'], self.audio,
+                self.parent_directory, cancel=self.cancel, report=self.progress.emit, **self.options)
+            self.completed.emit('DaVinci-Titelpaket erstellt: ' + str(self.output), True)
+        except Cancelled:
+            self.completed.emit('DaVinci-Export abgebrochen.', False)
+        except Exception as exc:
+            self.completed.emit(str(exc), False)
+
+
 class Window(QMainWindow):
     def __init__(self, library=None, settings=None, start_updates=False):
         super().__init__()
@@ -420,10 +446,10 @@ class Window(QMainWindow):
         detail.addWidget(label('EXPORT', 'eyebrow'))
         self.export_button = button('Untertitel exportieren · SRT', self.export_srt)
         detail.addWidget(self.export_button)
-        self.title_export = button('Titel-Export · in Vorbereitung')
+        self.title_export = button('Bearbeitbare Titel · DaVinci', self.export_resolve)
         self.title_export.setEnabled(False)
         detail.addWidget(self.title_export)
-        detail.addWidget(label('SRT exportiert bestätigte Passagen. Die Titel-Ausgabe für DaVinci Resolve folgt als eigener Ausbauschritt.', 'muted'))
+        detail.addWidget(label('Exportiert bestätigte Passagen: als Untertitel oder als einzeln bearbeitbare Text+-Kompositionen für DaVinci Resolve.', 'muted'))
         self.folder_button = button('Projektdateien öffnen  ↗', self.open_folder)
         detail.addStretch()
         detail.addWidget(self.folder_button)
@@ -551,6 +577,7 @@ class Window(QMainWindow):
         self.open_button.setEnabled(ready)
         self.save_button.setEnabled(ready)
         self.export_button.setEnabled(ready)
+        self.title_export.setEnabled(ready and not busy)
         self.folder_button.setEnabled(project is not None)
         if project:
             self.title.setText(project.info['name'])
@@ -792,6 +819,97 @@ class Window(QMainWindow):
                 project.update()
         except (ValueError, OSError) as exc:
             self.notify_error(exc)
+
+    def export_resolve(self):
+        project = self.selected()
+        if not project or not project.ready or self.worker and self.worker.isRunning():
+            return
+        self.flush_editor(str(project.directory), lambda: self._export_resolve(project))
+
+    def _export_resolve(self, project):
+        try:
+            server = self.sessions.open(project)
+            with server.store.lock:
+                server.store.save(server.store.revision)
+                document = server.store.document()
+                audio = server.store.audio
+            if not document['confirmed_occurrences']:
+                raise ValueError('Bitte zuerst Textpassagen prüfen und bestätigen.')
+        except (ValueError, OSError) as exc:
+            self.notify_error(exc)
+            return
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Bearbeitbare DaVinci-Titel exportieren')
+        dialog.resize(610, 330)
+        form = QFormLayout(dialog)
+        form.addRow(label(f'Bestätigte Passagen: {len(document["confirmed_occurrences"])} · Export als Text+-Kompositionen.'))
+        form.addRow(label('Der Import erstellt eine neue Timeline. Wähle die Bildrate deiner gewünschten Ziel-Timeline.', 'muted'))
+        fps = QComboBox()
+        for value in (24, 25, 30, 50, 60):
+            fps.addItem(f'{value} FPS', value)
+        resolution = QComboBox()
+        resolution.addItem('Full HD · 1920 × 1080', (1920, 1080))
+        resolution.addItem('UHD · 3840 × 2160', (3840, 2160))
+        offset = QDoubleSpinBox()
+        offset.setRange(0, 86400)
+        offset.setDecimals(3)
+        offset.setSuffix(' s')
+        include_audio = QCheckBox('Song als Audiospur mitnehmen')
+        include_audio.setChecked(True)
+        form.addRow('Bildrate', fps)
+        form.addRow('Auflösung', resolution)
+        form.addRow('Song beginnt bei', offset)
+        form.addRow('', include_audio)
+        controls = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        controls.button(QDialogButtonBox.StandardButton.Ok).setText('Exportordner wählen …')
+        controls.button(QDialogButtonBox.StandardButton.Cancel).setText('Abbrechen')
+        controls.accepted.connect(dialog.accept)
+        controls.rejected.connect(dialog.reject)
+        form.addRow(controls)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        parent = QFileDialog.getExistingDirectory(self, 'DaVinci-Export ablegen', str(project.directory))
+        if not parent:
+            return
+        width, height = resolution.currentData()
+        options = dict(fps=fps.currentData(), offset=offset.value(), width=width, height=height,
+                       include_audio=include_audio.isChecked())
+        self.worker = TitleExportWorker(project, document, audio, parent, options, self)
+        self.worker.progress.connect(self.on_progress)
+        self.worker.completed.connect(self.resolve_export_result)
+        self.worker.finished.connect(self.import_finished)
+        self.progress.setRange(0, 100)
+        self.progress.setValue(0)
+        self.progress.show()
+        self.cancel_button.setEnabled(True)
+        self.cancel_button.show()
+        self.worker.start()
+        self.show_project()
+
+    def resolve_export_result(self, message, success):
+        self.message.setText(message[:1600])
+        if not success:
+            return
+        output = self.worker.output
+        command = 'dofile(' + lua_string((output / 'Import_in_DaVinci.lua').as_posix()) + ')'
+        dialog = QDialog(self)
+        dialog.setWindowTitle('DaVinci-Titelpaket ist fertig')
+        dialog.resize(720, 370)
+        layout = QVBoxLayout(dialog)
+        layout.addWidget(label('In DaVinci Resolve importieren', 'heading'))
+        layout.addWidget(label('Öffne dein Resolve-Projekt und danach Arbeitsbereich / Workspace → Konsole / Console. Wähle dort Lua, füge diesen Befehl ein und drücke Enter.'))
+        field = QPlainTextEdit(command)
+        field.setReadOnly(True)
+        field.setMaximumHeight(95)
+        layout.addWidget(field)
+        layout.addWidget(button('Importbefehl kopieren', lambda: QApplication.clipboard().setText(command)))
+        layout.addWidget(button('Exportordner öffnen ↗', lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(output)))))
+        layout.addWidget(label('Die neue Timeline enthält einzelne Text+-Kompositionen. Zum Bearbeiten einen Clip auswählen und in Fusion den Knoten Lyrics_Text öffnen. Den gesamten Exportordner behalten.', 'muted'))
+        close = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        close.button(QDialogButtonBox.StandardButton.Close).setText('Schließen')
+        close.rejected.connect(dialog.reject)
+        layout.addWidget(close)
+        dialog.exec()
 
     def open_folder(self):
         project = self.selected()
