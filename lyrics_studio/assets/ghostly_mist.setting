@@ -1,0 +1,638 @@
+{
+	Tools = {
+		GhostlyMistDissolve = MacroOperator {
+			Tools = {
+				GMDMistSeed1 = Blur {
+					Inputs = ordered() {
+						Filter = Input { Value = FuID { "Fast Gaussian" } },
+						XBlurSize = Input { Value = 3 },
+						YBlurSize = Input { Value = 13 },
+						LockXY = Input { Value = 0 },
+						Input = Input {
+							SourceOp = "GMDText",
+							Source = "Output"
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 605, 115.5 } }
+				},
+				GMDParams = Custom {
+					Inputs = {
+						LUTIn3 = Input {
+							SourceOp = "CustomTool1LUTIn3",
+							Source = "Value"
+						},
+						NumberIn2 = Input { Value = 1 },
+						NumberIn4 = Input { Value = 1 },
+						NumberIn3 = Input { Value = 1 },
+						NumberIn6 = Input { Value = 2 },
+						NumberIn8 = Input { Value = 4 },
+						LUTIn4 = Input {
+							SourceOp = "CustomTool1LUTIn4",
+							Source = "Value"
+						},
+						NumberIn1 = Input { Value = 1 },
+						LUTIn2 = Input {
+							SourceOp = "CustomTool1LUTIn2",
+							Source = "Value"
+						},
+						LUTIn1 = Input {
+							SourceOp = "CustomTool1LUTIn1",
+							Source = "Value"
+						},
+						NumberIn7 = Input { Value = 2 },
+						NumberIn5 = Input { Value = 1 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 165, 16.5 } },
+					UserControls = {
+						NumberIn8 = {
+							INP_MaxAllowed = 15,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 15,
+							INP_MinScale = 0.1,
+							INP_MinAllowed = 0.1,
+							LINKID_DataType = "Number",
+							INPN_Default = 4,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Dissolve Weight (s)"
+						},
+						NumberIn2 = {
+							INP_MaxAllowed = 2,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 2,
+							INP_MinScale = 0,
+							INP_MinAllowed = 0,
+							LINKID_DataType = "Number",
+							INPN_Default = 1,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Mist Motion"
+						},
+						NumberIn7 = {
+							INP_MaxAllowed = 15,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 15,
+							INP_MinScale = 0,
+							INP_MinAllowed = 0,
+							LINKID_DataType = "Number",
+							INPN_Default = 2,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Hold Weight (s)"
+						},
+						NumberIn1 = {
+							INP_MaxAllowed = 2,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 2,
+							INP_MinScale = 0,
+							INP_MinAllowed = 0,
+							LINKID_DataType = "Number",
+							INPN_Default = 1,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Mist Intensity"
+						},
+						NumberIn3 = {
+							INP_MaxAllowed = 2,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 2,
+							INP_MinScale = 0,
+							INP_MinAllowed = 0,
+							LINKID_DataType = "Number",
+							INPN_Default = 1,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Upward Drift"
+						},
+						NumberIn5 = {
+							INP_MaxAllowed = 2,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 2,
+							INP_MinScale = 0,
+							INP_MinAllowed = 0,
+							LINKID_DataType = "Number",
+							INPN_Default = 1,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Dissolve Strength"
+						},
+						NumberIn6 = {
+							INP_MaxAllowed = 10,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 10,
+							INP_MinScale = 0.1,
+							INP_MinAllowed = 0.1,
+							LINKID_DataType = "Number",
+							INPN_Default = 2,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Appearance Weight (s)"
+						},
+						NumberIn4 = {
+							INP_MaxAllowed = 2,
+							INPID_InputControl = "SliderControl",
+							INP_MaxScale = 2,
+							INP_MinScale = -2,
+							INP_MinAllowed = -2,
+							LINKID_DataType = "Number",
+							INPN_Default = 1,
+							ICS_ControlPage = "Ghostly Mist",
+							LINKS_Name = "Sideways Drift"
+						}
+					}
+				},
+				CustomTool1LUTIn1 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				},
+				GMDNoise2 = FastNoise {
+					Inputs = {
+						YScale = Input { Value = 1.8 },
+						XScale = Input { Value = 32 },
+						Contrast = Input { Value = 1.6 },
+						Width = Input { Value = 3840 },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } },
+						Seethe = Input {
+							Value = 4.22555555555556,
+							Expression = "time/180*GMDParams.NumberIn2+3.17"
+						},
+						Height = Input { Value = 2160 },
+						LockXY = Input { Value = 0 },
+						UseFrameFormatSettings = Input { Value = 1 },
+						Detail = Input { Value = 5 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 55, 115.5 } }
+				},
+				GMDMistTravel1 = Transform {
+					Inputs = {
+						Input = Input {
+							SourceOp = "GMDMistSoft1",
+							Source = "Output"
+						},
+						Center = Input { Expression = "Point(0.5+0.045*(GMDClock.NumberIn5)*GMDParams.NumberIn4+0.002*sin(time/23+1)*(GMDClock.NumberIn5)*GMDParams.NumberIn2,0.5+0.075*(1-GMDClock.NumberIn4)+0.22*(GMDClock.NumberIn5)*GMDParams.NumberIn3)" },
+						Size = Input { Expression = "1+0.10*(GMDClock.NumberIn5)" }
+					},
+					ViewInfo = OperatorInfo { Pos = { 935, 115.5 } }
+				},
+				GMDTransparent = Background {
+					Inputs = {
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } },
+						TopLeftAlpha = Input { Value = 0 },
+						Height = Input { Value = 2160 },
+						UseFrameFormatSettings = Input { Value = 1 },
+						Width = Input { Value = 3840 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 55, 49.5 } }
+				},
+				GMDGlow = SoftGlow {
+					Inputs = {
+						Threshold = Input { Value = 0.1 },
+						Filter = Input { Value = FuID { "Fast Gaussian" } },
+						Input = Input {
+							SourceOp = "GMDCoreWarp",
+							Source = "Output"
+						},
+						XGlowSize = Input { Value = 8 },
+						Gain = Input { Value = 0.12 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 385, 115.5 } }
+				},
+				GMDMistWarp1 = Displace {
+					Inputs = {
+						Type = Input { Value = 1 },
+						YRefraction = Input {
+							Value = 0.121964069369252,
+							Expression = "(0.012+0.08*(1-GMDClock.NumberIn4)+0.11*(GMDClock.NumberIn5))*GMDParams.NumberIn5"
+						},
+						Input = Input {
+							SourceOp = "GMDMistSeed1",
+							Source = "Output"
+						},
+						XRefraction = Input {
+							Value = 0.0159973868632183,
+							Expression = "(0.008+0.007*(1-GMDClock.NumberIn4)+0.008*(GMDClock.NumberIn5))*GMDParams.NumberIn5"
+						},
+						Foreground = Input {
+							SourceOp = "GMDNoise1",
+							Source = "Output"
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 715, 115.5 } }
+				},
+				GMDCoreWarp = Displace {
+					Inputs = {
+						Type = Input { Value = 1 },
+						YRefraction = Input {
+							Value = 0.0425999534147518,
+							Expression = "(0.018*(1-GMDClock.NumberIn4)+0.06*(GMDClock.NumberIn5))*GMDParams.NumberIn5"
+						},
+						Input = Input {
+							SourceOp = "GMDMelt",
+							Source = "Output"
+						},
+						XRefraction = Input {
+							Value = 0.00638999301221277,
+							Expression = "(0.003*(1-GMDClock.NumberIn4)+0.009*(GMDClock.NumberIn5))*GMDParams.NumberIn5"
+						},
+						Foreground = Input {
+							SourceOp = "GMDNoise1",
+							Source = "Output"
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 275, 115.5 } }
+				},
+				GMDClock = Custom {
+					Inputs = {
+						LUTIn3 = Input {
+							SourceOp = "CustomTool1LUTIn31",
+							Source = "Value"
+						},
+						NumberIn2 = Input { Expression = "min(1,max(0,GMDClock.NumberIn1*(GMDParams.NumberIn6+GMDParams.NumberIn7+GMDParams.NumberIn8)/max(0.1,GMDParams.NumberIn6)))" },
+						NumberIn4 = Input { Expression = "GMDClock.NumberIn2*GMDClock.NumberIn2*(3-2*GMDClock.NumberIn2)" },
+						NumberIn3 = Input { Expression = "min(1,max(0,(GMDClock.NumberIn1*(GMDParams.NumberIn6+GMDParams.NumberIn7+GMDParams.NumberIn8)-GMDParams.NumberIn6-GMDParams.NumberIn7)/max(0.1,GMDParams.NumberIn8)))" },
+						NumberIn6 = Input { Expression = "(min(1,max(0,(GMDClock.NumberIn2-0.35)/0.65)))*(min(1,max(0,(GMDClock.NumberIn2-0.35)/0.65)))*(3-2*(min(1,max(0,(GMDClock.NumberIn2-0.35)/0.65))))" },
+						LUTIn1 = Input {
+							SourceOp = "CustomTool1LUTIn11",
+							Source = "Value"
+						},
+						NumberIn1 = Input { Expression = "min(1,max(0,(time-comp.RenderStart)/max(1,comp.RenderEnd-comp.RenderStart)))" },
+						LUTIn4 = Input {
+							SourceOp = "CustomTool1LUTIn41",
+							Source = "Value"
+						},
+						LUTIn2 = Input {
+							SourceOp = "CustomTool1LUTIn21",
+							Source = "Value"
+						},
+						NumberIn5 = Input { Expression = "GMDClock.NumberIn3*GMDClock.NumberIn3*(3-2*GMDClock.NumberIn3)" }
+					},
+					ViewInfo = OperatorInfo { Pos = { 275, 16.5 } }
+				},
+				GMDMistMerge2 = Merge {
+					Inputs = {
+						Foreground = Input {
+							SourceOp = "GMDMistTravel2",
+							Source = "Output"
+						},
+						Background = Input {
+							SourceOp = "GMDMistMerge1",
+							Source = "Output"
+						},
+						Blend = Input { Expression = "GMDParams.NumberIn1*0.5*(0.42*sin(3.14159265359*GMDClock.NumberIn2)+0.035*GMDClock.NumberIn4+0.85*sin(3.14159265359*(GMDClock.NumberIn3)))*(1-(GMDClock.NumberIn5))" },
+						PerformDepthMerge = Input { Value = 0 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 1595, 115.5 } }
+				},
+				GMDMistSeed2 = Blur {
+					Inputs = {
+						Filter = Input { Value = FuID { "Fast Gaussian" } },
+						XBlurSize = Input { Value = 6 },
+						YBlurSize = Input { Value = 21 },
+						LockXY = Input { Value = 0 },
+						Input = Input {
+							SourceOp = "GMDText",
+							Source = "Output"
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 1155, 115.5 } }
+				},
+				GMDMistTravel2 = Transform {
+					Inputs = {
+						Input = Input {
+							SourceOp = "GMDMistSoft2",
+							Source = "Output"
+						},
+						Center = Input { Expression = "Point(0.5+0.065*(GMDClock.NumberIn5)*GMDParams.NumberIn4+0.002*sin(time/23+2)*(GMDClock.NumberIn5)*GMDParams.NumberIn2,0.5+0.075*(1-GMDClock.NumberIn4)+0.29*(GMDClock.NumberIn5)*GMDParams.NumberIn3)" },
+						Size = Input { Expression = "1+0.10*(GMDClock.NumberIn5)" }
+					},
+					ViewInfo = OperatorInfo { Pos = { 1485, 115.5 } }
+				},
+				GMDMistSoft2 = Blur {
+					Inputs = {
+						XBlurSize = Input { Value = 4 },
+						Input = Input {
+							SourceOp = "GMDMistWarp2",
+							Source = "Output"
+						},
+						Filter = Input { Value = FuID { "Fast Gaussian" } }
+					},
+					ViewInfo = OperatorInfo { Pos = { 1375, 115.5 } }
+				},
+				GMDMistWarp2 = Displace {
+					Inputs = {
+						Type = Input { Value = 1 },
+						YRefraction = Input {
+							Value = 0.161951003685344,
+							Expression = "(0.012+0.08*(1-GMDClock.NumberIn4)+0.15*(GMDClock.NumberIn5))*GMDParams.NumberIn5"
+						},
+						Input = Input {
+							SourceOp = "GMDMistSeed2",
+							Source = "Output"
+						},
+						XRefraction = Input {
+							Value = 0.0159973868632183,
+							Expression = "(0.008+0.007*(1-GMDClock.NumberIn4)+0.008*(GMDClock.NumberIn5))*GMDParams.NumberIn5"
+						},
+						Foreground = Input {
+							SourceOp = "GMDNoise2",
+							Source = "Output"
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 1265, 115.5 } }
+				},
+				GMDMistMerge1 = Merge {
+					Inputs = {
+						Foreground = Input {
+							SourceOp = "GMDMistTravel1",
+							Source = "Output"
+						},
+						Background = Input {
+							SourceOp = "GMDLetters",
+							Source = "Output"
+						},
+						Blend = Input { Expression = "GMDParams.NumberIn1*1*(0.42*sin(3.14159265359*GMDClock.NumberIn2)+0.035*GMDClock.NumberIn4+0.85*sin(3.14159265359*(GMDClock.NumberIn3)))*(1-(GMDClock.NumberIn5))" },
+						PerformDepthMerge = Input { Value = 0 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 1045, 115.5 } }
+				},
+				CustomTool1LUTIn3 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				},
+				CustomTool1LUTIn4 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				},
+				GMDMelt = ErodeDilate {
+					Inputs = {
+						Input = Input {
+							SourceOp = "GMDText",
+							Source = "Output"
+						},
+						XAmount = Input {
+							Value = -0.000638999301221277,
+							Expression = "-0.0009*(GMDClock.NumberIn5)*GMDParams.NumberIn5"
+						}
+					},
+					ViewInfo = OperatorInfo { Pos = { 165, 115.5 } }
+				},
+				GMDFinal = Merge {
+					Inputs = {
+						Foreground = Input {
+							SourceOp = "GMDMistMerge2",
+							Source = "Output"
+						},
+						Background = Input {
+							SourceOp = "GMDTransparent",
+							Source = "Output"
+						},
+						Blend = Input { Expression = "min(1,GMDClock.NumberIn1*35)*min(1,(1-GMDClock.NumberIn1)*35)" },
+						PerformDepthMerge = Input { Value = 0 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 1705, 115.5 } }
+				},
+				GMDLetters = Merge {
+					Inputs = {
+						Foreground = Input {
+							SourceOp = "GMDGlow",
+							Source = "Output"
+						},
+						Background = Input {
+							SourceOp = "GMDTransparent",
+							Source = "Output"
+						},
+						Blend = Input { Expression = "GMDClock.NumberIn6*max(0,1-(GMDClock.NumberIn3)/0.65)" },
+						PerformDepthMerge = Input { Value = 0 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 495, 115.5 } }
+				},
+				GMDMistSoft1 = Blur {
+					Inputs = {
+						XBlurSize = Input { Value = 2 },
+						Input = Input {
+							SourceOp = "GMDMistWarp1",
+							Source = "Output"
+						},
+						Filter = Input { Value = FuID { "Fast Gaussian" } }
+					},
+					ViewInfo = OperatorInfo { Pos = { 825, 115.5 } }
+				},
+				GMDNoise1 = FastNoise {
+					Inputs = {
+						YScale = Input { Value = 2.5 },
+						XScale = Input { Value = 24 },
+						Contrast = Input { Value = 1.6 },
+						Width = Input { Value = 3840 },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } },
+						Seethe = Input {
+							Value = 1.05555555555556,
+							Expression = "time/180*GMDParams.NumberIn2+0"
+						},
+						Height = Input { Value = 2160 },
+						LockXY = Input { Value = 0 },
+						UseFrameFormatSettings = Input { Value = 1 },
+						Detail = Input { Value = 5 }
+					},
+					ViewInfo = OperatorInfo { Pos = { 55, 82.5 } }
+				},
+				CustomTool1LUTIn41 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				},
+				CustomTool1LUTIn11 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				},
+				GMDText = TextPlus {
+					ViewInfo = OperatorInfo { Pos = { 55, 16.5 } },
+					Inputs = {
+						LayoutRotation = Input { Value = 1 },
+						HorizontalJustificationNew = Input { Value = 3 },
+						StyledText = Input { Value = "Lyrics Studio" },
+						Center = Input { Value = { 0.5, 0.48148 } },
+						Softness1 = Input { Value = 1 },
+						Size = Input { Value = 0.064 },
+						TransformRotation = Input { Value = 1 },
+						Red1 = Input { Value = 0.8627451 },
+						Blue1 = Input { Value = 0.95686275 },
+						Wrap = Input { Value = 1 },
+						Width = Input { Value = 3840 },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" } },
+						Style = Input { Value = "Regular" },
+						Green1 = Input { Value = 0.9019608 },
+						Height = Input { Value = 2160 },
+						VerticalJustificationNew = Input { Value = 3 },
+						UseFrameFormatSettings = Input { Value = 1 },
+						Font = Input { Value = "Garamond" }
+					},
+					Version = 1
+				},
+				CustomTool1LUTIn21 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				},
+				CustomTool1LUTIn31 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				},
+				CustomTool1LUTIn2 = LUTBezier {
+					CtrlWZoom = false,
+					NameSet = true,
+					KeyColorSplines = {
+						[0] = {
+							[0] = { 0, RH = { 0.333333333333333, 0.333333333333333 }, Flags = { Linear = true } },
+							{ 1, LH = { 0.666666666666667, 0.666666666666667 }, Flags = { Linear = true } }
+						}
+					},
+					SplineColor = { Green = 0, Blue = 0, Red = 0 }
+				}
+			},
+			Inputs = {
+				Glow = InstanceInput {
+					Name = "Glow Strength",
+					SourceOp = "GMDGlow",
+					Source = "Gain"
+				},
+				DissolveStrength = InstanceInput {
+					Name = "Dissolve Strength",
+					SourceOp = "GMDParams",
+					Source = "NumberIn5"
+				},
+				Mist = InstanceInput {
+					Name = "Mist Intensity",
+					SourceOp = "GMDParams",
+					Source = "NumberIn1"
+				},
+				StyledText = InstanceInput {
+					Name = "Text",
+					SourceOp = "GMDText",
+					Source = "StyledText"
+				},
+				Center = InstanceInput {
+					Name = "Position",
+					SourceOp = "GMDText",
+					Source = "Center"
+				},
+				Size = InstanceInput {
+					Name = "Size",
+					SourceOp = "GMDText",
+					Source = "Size"
+				},
+				Rise = InstanceInput {
+					Name = "Upward Drift",
+					SourceOp = "GMDParams",
+					Source = "NumberIn3"
+				},
+				Red1 = InstanceInput {
+					ControlGroup = 1,
+					Name = "Red",
+					SourceOp = "GMDText",
+					Source = "Red1"
+				},
+				Blue1 = InstanceInput {
+					ControlGroup = 1,
+					Name = "Blue",
+					SourceOp = "GMDText",
+					Source = "Blue1"
+				},
+				Appear = InstanceInput {
+					Name = "Appearance Weight (s)",
+					SourceOp = "GMDParams",
+					Source = "NumberIn6"
+				},
+				Motion = InstanceInput {
+					Name = "Mist Motion",
+					SourceOp = "GMDParams",
+					Source = "NumberIn2"
+				},
+				Font = InstanceInput {
+					Name = "Font",
+					SourceOp = "GMDText",
+					Source = "Font",
+					ControlGroup = 2
+				},
+				Style = InstanceInput {
+					Name = "Style",
+					SourceOp = "GMDText",
+					Source = "Style",
+					ControlGroup = 2
+				},
+				Green1 = InstanceInput {
+					ControlGroup = 1,
+					Name = "Green",
+					SourceOp = "GMDText",
+					Source = "Green1"
+				},
+				Depart = InstanceInput {
+					Name = "Dissolve Weight (s)",
+					SourceOp = "GMDParams",
+					Source = "NumberIn8"
+				},
+				Hold = InstanceInput {
+					Name = "Hold Weight (s)",
+					SourceOp = "GMDParams",
+					Source = "NumberIn7"
+				},
+				Wind = InstanceInput {
+					Name = "Sideways Drift",
+					SourceOp = "GMDParams",
+					Source = "NumberIn4"
+				},
+				Alpha1 = InstanceInput {
+					ControlGroup = 1,
+					Name = "Alpha",
+					SourceOp = "GMDText",
+					Source = "Alpha1"
+				}
+			},
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "GMDFinal",
+					Source = "Output"
+				}
+			}
+		}
+	}
+}

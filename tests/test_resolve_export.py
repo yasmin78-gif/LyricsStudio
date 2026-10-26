@@ -62,6 +62,10 @@ class ResolveExportTests(unittest.TestCase):
         self.assertIn('*', (output / '.gitignore').read_text())
         self.assertIn('dofile(', (output / 'IMPORT-ANLEITUNG.txt').read_text(encoding='utf-8'))
         self.assertIn('Lyrics_Text', (output / 'Import_in_DaVinci.lua').read_text(encoding='utf-8'))
+        self.assertIn('GetSelectedClips', (output / 'Titelstil_in_Resolve.lua').read_text(encoding='utf-8'))
+        self.assertIn('GhostlyMistDissolve', (output / 'Ghostly Mist Dissolve.setting').read_text(encoding='utf-8'))
+        self.assertTrue((output / 'Lyrics_Stile.lua').is_file())
+        self.assertIn('Titelstil_in_Resolve.lua', (output / 'IMPORT-ANLEITUNG.txt').read_text(encoding='utf-8'))
         self.assertEqual(self.document, before)
         self.assertNotIn(str(self.audio), (output / 'Titel_Daten.lua').read_text(encoding='utf-8'))
 

@@ -139,7 +139,12 @@ def export_package(document, name, audio_path, parent, *, fps=24, offset=0, widt
         (root / 'Titel_Daten.lua').write_text('return ' + lua_value(plan) + '\n', encoding='utf-8')
         template = Path(__file__).parent / 'assets/resolve_import.lua'
         shutil.copyfile(template, root / 'Import_in_DaVinci.lua')
+        for source, destination in [('resolve_styles.lua', 'Lyrics_Stile.lua'),
+                                    ('resolve_style_picker.lua', 'Titelstil_in_Resolve.lua'),
+                                    ('ghostly_mist.setting', 'Ghostly Mist Dissolve.setting')]:
+            shutil.copyfile(template.parent / source, root / destination)
         command = 'dofile(' + lua_string((target / 'Import_in_DaVinci.lua').as_posix()) + ')'
+        style_command = 'dofile(' + lua_string((target / 'Titelstil_in_Resolve.lua').as_posix()) + ')'
         (root / 'IMPORT-ANLEITUNG.txt').write_text(
             'Lyrics Studio - Bearbeitbare DaVinci-Titel\n\n'
             f'{len(plan["rows"])} bestätigte Passagen, {fps} FPS, {width} x {height}.\n\n'
@@ -153,6 +158,16 @@ def export_package(document, name, audio_path, parent, *, fps=24, offset=0, widt
             'Den gesamten Exportordner behalten: Die Titel referenzieren die transparente Bildsequenz und ihre Kompositionen.\n'
             'Bei verschobenem Exportordner den Pfad im dofile-Befehl anpassen. Keine einzelne Datei aus dem Paket verschieben.\n',
             encoding='utf-8')
+        with (root / 'IMPORT-ANLEITUNG.txt').open('a', encoding='utf-8') as guide:
+            guide.write('\nAnimationen nachträglich in Resolve wählen\n\n'
+                        'In der Edit-Timeline einen oder mehrere Lyrics-Clips markieren. In der Lua-Konsole ausführen:\n\n'
+                        + style_command + '\n\n'
+                        'Im Dialog Standard Text+, Sanftes Ein-/Ausblenden oder Ghostly Mist Dissolve wählen.\n'
+                        'Für weitere Passagen mit einem anderen Stil wiederholen. Text und Clipzeiten bleiben erhalten.\n'
+                        'Die Vorlage wird mitgeliefert; eine separate Installation ist nicht nötig.\n'
+                        'Die vorherige Fusion-Komposition bleibt im Clip erhalten. Jeder Wechsel legt eine neue Komposition an.\n'
+                        'Schrift, Größe, Farbe und Position werden übernommen; eigene Keyframe-Animationen werden nicht in den neuen Stil übertragen.\n'
+                        'Voraussetzung: Resolve mit Timeline:GetSelectedClips() (getestet mit Studio 21.1.1).\n')
         report('DaVinci-Export wird abgeschlossen …', 95)
         check_cancel()
         root.rename(target)

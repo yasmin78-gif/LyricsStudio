@@ -903,6 +903,9 @@ class Window(QMainWindow):
         field.setMaximumHeight(95)
         layout.addWidget(field)
         layout.addWidget(button('Importbefehl kopieren', lambda: QApplication.clipboard().setText(command)))
+        style_command = 'dofile(' + lua_string((output / 'Titelstil_in_Resolve.lua').as_posix()) + ')'
+        layout.addWidget(label('Nach dem Import: Lyrics-Clips in Resolve markieren und mit dem Stilbefehl eine Animation wählen. Für andere Passagen wiederholen.', 'muted'))
+        layout.addWidget(button('Befehl zur Stilwahl kopieren', lambda: QApplication.clipboard().setText(style_command)))
         layout.addWidget(button('Exportordner öffnen ↗', lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(output)))))
         layout.addWidget(label('Die neue Timeline enthält einzelne Text+-Kompositionen. Zum Bearbeiten einen Clip auswählen und in Fusion den Knoten Lyrics_Text öffnen. Den gesamten Exportordner behalten.', 'muted'))
         close = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
