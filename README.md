@@ -4,10 +4,10 @@ Lokale Desktop-Anwendung für Songtexte und ihr Timing: Songs importieren, Whisp
 
 ## Windows herunterladen
 
-**Erste öffentliche Version: 0.6.0 · Windows x64**
+**Aktuelle Version: 0.6.1 · Windows x64**
 
-- [Installer herunterladen](https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.0/LyricsStudio-0.6.0-Windows-x64-Setup.exe)
-- [Alle Downloads, portable ZIP, Prüfsummen und Quellen](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.0)
+- [Installer herunterladen](https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.1/LyricsStudio-0.6.1-Windows-x64-Setup.exe)
+- [Alle Downloads, portable ZIP, Prüfsummen und Quellen](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.1)
 
 Der Installer installiert nur für den aktuellen Benutzer, ohne Administratorrechte. Python und der eingebettete Editor sind enthalten. Für die portable Ausgabe das vollständige ZIP entpacken und `LyricsStudio.exe` starten. Bei der Deinstallation bleiben persönliche Projekte und Einstellungen erhalten.
 
@@ -59,9 +59,13 @@ Die Bibliothek liegt standardmäßig außerhalb des Quellcodes:
 
 „Projektordner“ wählt eine andere Bibliothek; `--library PATH` gilt für einen Start. Für Backups vollständige Projektordner bei geschlossener Anwendung kopieren. Originaldateien bleiben unverändert. Songs, Lyrics, Modelle, Projekte und Exporte gehören nicht in Git; typische Dateien sind zusätzlich ausgeschlossen. Benutzer benötigen die Rechte an den von ihnen verwendeten und veröffentlichten Medien.
 
+## Über Lyrics Studio
+
+Die Schaltfläche „Über Lyrics Studio“ öffnet die Programminformationen mit Symbol, Versionsnummer, Copyright, MIT-Lizenz sowie Python-/Qt-Version, Betriebssystem, Architektur und Prozessinformationen. Dort sind auch das GitHub-Projekt und die vollständigen Lizenz- und Datenschutzhinweise erreichbar.
+
 ## Lizenz
 
-Eigener Quellcode und eigene Grafiken: **MIT**, siehe [LICENSE](LICENSE). Mitgelieferte Bibliotheken behalten ihre eigenen Lizenzen, insbesondere PySide6/Qt unter LGPLv3 und die weiteren Lizenzen von Qt WebEngine/Chromium. Die Hinweise sind im Programm unter „Lizenzen“ und unter [legal/THIRD_PARTY.md](legal/THIRD_PARTY.md) erreichbar. Passende Qt-/PySide-Quellarchive stehen zusätzlich beim Release bereit. Austausch und Änderung der Bibliotheken gemäß ihren Lizenzen bleiben erlaubt.
+Eigener Quellcode und eigene Grafiken: **MIT**, siehe [LICENSE](LICENSE). Mitgelieferte Bibliotheken behalten ihre eigenen Lizenzen, insbesondere PySide6/Qt unter LGPLv3 und die weiteren Lizenzen von Qt WebEngine/Chromium. Die Hinweise sind im Programm unter „Über Lyrics Studio → Lizenzen und Datenschutz“ und unter [legal/THIRD_PARTY.md](legal/THIRD_PARTY.md) erreichbar. Die unveränderten Qt-/PySide-Quellarchive sind weiterhin bei [v0.6.0](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.0) verfügbar; genaue Downloadlinks und Prüfsummen stehen in [legal/SOURCES.json](legal/SOURCES.json). Austausch und Änderung der Bibliotheken gemäß ihren Lizenzen bleiben erlaubt.
 
 Keine Verbindung oder offizielle Unterstützung durch Blackmagic Design, OpenAI, FFmpeg oder Qt wird behauptet. Es gibt keine Zusicherung fehlerfreier Transkription oder einer juristisch zertifizierten Nutzung.
 

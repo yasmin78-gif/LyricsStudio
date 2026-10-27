@@ -3,6 +3,8 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lyrics_studio import __version__
 
 
 def inspect(root):
@@ -23,7 +25,7 @@ def inspect(root):
         assert path.suffix.lower() not in ('.wav','.mp3','.flac','.m4a','.srt'), 'User media in release'
         files.append({'path':path.relative_to(root).as_posix(), 'bytes':path.stat().st_size,
                       'sha256':hashlib.file_digest(path.open('rb'),'sha256').hexdigest()})
-    return {'format':1, 'app_version':'0.6.0', 'platform':'Windows x64',
+    return {'format':1, 'app_version':__version__, 'platform':'Windows x64',
             'python':'3.13.15', 'pyside':'6.12.0', 'qt':'6.12.0',
             'webengine':'6.140.0', 'chromium':'140.0.7339.225',
             'external_ffmpeg_bundled':False,'whisper_models_bundled':False,'files':files}

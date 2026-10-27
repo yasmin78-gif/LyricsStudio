@@ -26,7 +26,8 @@ from .updates import check_for_updates
 from .branding import application_icon, set_taskbar_identity
 from .embedded import EditorView
 from .resolve_export import export_package, lua_string
-from .legal_info import FFMPEG_URL, MODEL_URL, show_legal
+from .legal_info import FFMPEG_URL, MODEL_URL
+from .about import AboutDialog
 from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
@@ -381,7 +382,7 @@ class Window(QMainWindow):
         local_badge.setMinimumWidth(200)
         header.addWidget(local_badge)
         header.addWidget(button('Einstellungen', self.configure))
-        header.addWidget(button('Lizenzen', lambda: show_legal(self)))
+        header.addWidget(button('Über Lyrics Studio', lambda: AboutDialog(self).exec()))
         layout.addLayout(header)
         toolbar = QHBoxLayout()
         toolbar.addWidget(label('PROJEKTBIBLIOTHEK', 'eyebrow'))

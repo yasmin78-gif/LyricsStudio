@@ -1,4 +1,4 @@
-Lyrics Studio - erste öffentliche Windows-Version
+Lyrics Studio - lokale Bearbeitung von Songtexten
 
 FFmpeg mit Whisper-Unterstützung und ein Whisper-Modell werden separat benötigt.
 Die Downloadbuttons in den Einstellungen öffnen die Anbieter-Webseiten.
@@ -6,8 +6,8 @@ Es werden keine Songs oder Modelle mitgeliefert und keine Songs hochgeladen.
 
 Die Oberfläche nutzt PySide6/Qt unter LGPLv3 und Qt WebEngine/Chromium mit weiteren
 Open-Source-Lizenzen. Vollständige Hinweise liegen im installierten Ordner
-_internal\legal und sind über "Lizenzen" im Programm erreichbar. Die zugehörigen
-Quellarchive werden beim GitHub-Release bereitgestellt. Austausch und Änderung
+_internal\legal und sind über "Über Lyrics Studio" im Programm erreichbar. Die zugehörigen
+Quellarchive sind über die Quellenhinweise des GitHub-Releases erreichbar. Austausch und Änderung
 der Bibliotheken gemäß ihren Lizenzen bleiben erlaubt.
 
 Der Installer benötigt keine Administratorrechte. Persönliche Projekte und

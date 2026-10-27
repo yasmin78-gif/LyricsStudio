@@ -11,7 +11,9 @@ bootloader (GPL with its distribution exception). The setup program is built wit
 unmodified Inno Setup. Microsoft Windows runtime files retain Microsoft's terms.
 
 See SOURCES.json for exact upstream source archives and versions. The release
-provides the corresponding Qt and PySide source archives alongside the installer.
+provides access to the corresponding Qt and PySide source archives through the
+release download URLs in SOURCES.json. Releases with unchanged libraries may link
+to the original source assets instead of uploading identical copies again.
 Qt's source archives contain third-party notices and build scripts. The exact
 Chromium notices retained from its matching source are in chromium-credits.html.
 Additional Qt third-party notices are retained from the matching source archives.
