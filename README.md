@@ -31,7 +31,7 @@ Bei Bedarf die Unterstützung mit `ffmpeg -hide_banner -h filter=whisper` prüfe
 1. Einen Song per Drag & Drop ins Fenster ziehen oder „Neues Projekt“ wählen. WAV, MP3, FLAC, M4A und OGG werden angeboten; die tatsächliche Dekodierung übernimmt das separat installierte FFmpeg.
 2. Projektnamen und Sprache wählen. Optional vorhandene Lyrics als Referenz einfügen. Die automatische Zuordnung dieses Referenztextes zum Gesang ist noch nicht implementiert.
 3. Song vorbereiten lassen. Eine WAV-Arbeitskopie und unverbindliche Whisper-Vorschläge entstehen lokal. Die Vorbereitung ist abbrechbar.
-4. „Lyrics bearbeiten“ öffnen. Text und Zeiten prüfen, korrigieren und ausdrücklich bestätigen. Whisper-Erkennung kann bei Gesang fehlerhaft sein. Der Editor arbeitet intern derzeit mit 24 FPS.
+4. „Lyrics bearbeiten“ öffnen. „Anfang auf aktuelle Position setzen“ und „Ende auf aktuelle Position setzen“ übernehmen die Abspielposition in die gewählte Passage; das funktioniert bei Wiedergabe und im pausierten Zustand. Ungültige Intervalle werden abgewiesen. Text und Zeiten prüfen, korrigieren und ausdrücklich bestätigen. Whisper-Erkennung kann bei Gesang fehlerhaft sein. Der Editor arbeitet intern derzeit mit 24 FPS.
 5. Über die obere Werkzeugleiste oder Strg+S speichern. Auch aktuelle Eingaben werden übernommen. Projektansichten bleiben beim Wechsel geöffnet; die Wiedergabe pausiert.
 6. Bestätigte Passagen als SRT oder als bearbeitbare DaVinci-Titel exportieren.
 

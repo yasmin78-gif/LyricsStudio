@@ -52,6 +52,7 @@ function controls() {
   $('unconfirm').disabled = row()?.status !== 'confirmed' || formDirty;
   $('confirm').disabled = !row() || row().deleted || !$('acknowledge').checked || !$('reviewer').value.trim();
   $('apply').disabled = !formDirty;
+  for (const id of ['startAtPosition','endAtPosition']) $(id).disabled = !row() || row().deleted;
   $('saveStatus').textContent = formDirty || state.dirty ? 'Nicht gespeicherte Änderungen' : state.has_saved_draft ? `Gespeicherter Stand · ${state.confirmed_count} bestätigt` : 'Unveränderte Vorschläge · noch kein Entwurf gespeichert';
   $('reload').disabled = !state.has_saved_draft || !(formDirty || state.dirty);
   $('reload').title = state.has_saved_draft ? 'Nicht gespeicherte Änderungen nach Rückfrage verwerfen.' : 'Es gibt noch keinen gespeicherten Entwurf.';
@@ -154,6 +155,19 @@ function draw() {
   for (const [id,t] of [['startHandle',selectedRange.start],['endHandle',selectedRange.end]]) {const x=toX(t); $(id).hidden=!row()||!Number.isFinite(t)||x<0||x>w; $(id).style.left=`${x}px`;}
 }
 function nudge(boundary,delta) {const el=$(boundary); const old=Number(el.value); if(!Number.isFinite(old))return; el.value=String(old+delta/state.fps); changed();}
+function boundaryAtPosition(boundary) {
+  if (!row() || row().deleted) return;
+  const time = position(), opposite = $(boundary === 'start' ? 'end' : 'start');
+  const other = Number(opposite.value);
+  if (!Number.isFinite(time) || time < 0 || time > state.duration || !opposite.value.trim() || !Number.isFinite(other) || other < 0 || other > state.duration || (boundary === 'start' ? time >= other : time <= other)) {
+    notice(boundary === 'start' ? 'Der Anfang muss vor dem Ende liegen. Bitte die Songposition oder zuerst das Ende anpassen.' : 'Das Ende muss nach dem Anfang liegen. Bitte die Songposition oder zuerst den Anfang anpassen.', true);
+    return;
+  }
+  if ($(boundary).value.trim() && Number($(boundary).value) === time) return;
+  $(boundary).value = String(time);
+  changed();
+  notice(`${boundary === 'start' ? 'Anfang' : 'Ende'} auf aktuelle Songposition gesetzt: ${format(time)}. Bitte prüfen und speichern.`);
+}
 
 $('play').onclick=togglePlay;
 $('back5').onclick=()=>seekTo(position()-5); $('forward5').onclick=()=>seekTo(position()+5);
@@ -163,6 +177,8 @@ $('seek').onkeydown=e=>{if(e.key==='Enter')$('jump').click();};
 $('text').oninput=changed;
 for(const boundary of ['start','end']) {$(boundary).oninput=changed;$(boundary).onkeydown=e=>{if(['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();nudge(boundary,(e.key==='ArrowUp'?1:-1)*(e.shiftKey?10:1));}};}
 for(const button of document.querySelectorAll('[data-boundary]'))button.onclick=()=>nudge(button.dataset.boundary,Number(button.dataset.delta));
+$('startAtPosition').onclick=()=>boundaryAtPosition('start');
+$('endAtPosition').onclick=()=>boundaryAtPosition('end');
 $('acknowledge').onchange=controls; $('reviewer').oninput=controls;
 $('apply').onclick=()=>run(applyForm);
 $('preview').onclick=()=>run(preview);

@@ -69,5 +69,25 @@ with tempfile.TemporaryDirectory(prefix='lyrics-browser-test-') as tmp:
     until(page,"document.querySelectorAll('.lyric-row')[2].classList.contains('editing')")
     assert store.rows[2]['status']=='editing'
     assert js(page,"getComputedStyle(document.querySelectorAll('.lyric-row')[2].querySelector('.dot')).backgroundColor")=='rgb(242, 192, 120)'
-    print('Browser QA passed: project title, tab title, all status colors, selection, confirmation revoked after edit.')
+    until(page,"document.getElementById('audio').readyState >= 1")
+    js(page,"audio.currentTime=4.25;document.getElementById('startAtPosition').click()")
+    assert float(js(page,"document.getElementById('start').value"))==4.25
+    js(page,"audio.currentTime=6.75;document.getElementById('endAtPosition').click()")
+    assert float(js(page,"document.getElementById('end').value"))==6.75
+    js(page,"audio.currentTime=4;document.getElementById('endAtPosition').click()")
+    assert float(js(page,"document.getElementById('end').value"))==6.75
+    assert js(page,"document.getElementById('notice').classList.contains('error')")
+    # Segment playback has its own clock and playback rate; HTML audio may be elsewhere.
+    sampled=js(page,"(()=>{const previous=context;context={currentTime:10.25};segment={start:4,end:6,rate:2,begins:10};document.getElementById('startAtPosition').click();segment=null;context=previous;return document.getElementById('start').value;})()")
+    assert float(sampled)==4.5
+    js(page,"document.getElementById('apply').click()")
+    until(page,"document.getElementById('apply').disabled && document.body.getAttribute('aria-busy') === 'false'")
+    assert store.rows[2]['start']==4.5 and store.rows[2]['end']==6.75
+    js(page,"document.getElementById('undo').click()")
+    until(page,"document.getElementById('start').value === '4'")
+    assert store.rows[2]['end']==6
+    js(page,"document.getElementById('redo').click()")
+    until(page,"document.getElementById('start').value === '4.5'")
+    assert store.rows[2]['end']==6.75
+    print('Browser QA passed: status colors, current-position boundaries, invalid intervals, segment clock, undo/redo.')
     view.close();view.setPage(None);app.processEvents();sessions.close()

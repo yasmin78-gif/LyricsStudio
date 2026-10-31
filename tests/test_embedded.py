@@ -74,6 +74,18 @@ class EmbeddedEditorTests(unittest.TestCase):
         self.app.processEvents()
         self.temp.cleanup()
 
+    def test_current_position_boundaries_are_saved_by_desktop(self):
+        self.open_project()
+        view = self.window.editor_views[str(self.projects[0].directory)]
+        wait_for(lambda: javascript(view.page(), "document.getElementById('audio').readyState >= 1"))
+        javascript(view.page(), "audio.currentTime=.75;document.getElementById('startAtPosition').click();audio.currentTime=2.25;document.getElementById('endAtPosition').click()")
+        result = []
+        view.flush(True, result.append)
+        wait_for(lambda: bool(result))
+        self.assertTrue(result[0]['ok'])
+        row = self.window.sessions.open(self.projects[0]).store.rows[0]
+        self.assertEqual((row['start'],row['end']),(.75,2.25))
+
     def open_project(self, index=0):
         project = self.projects[index]
         for row in range(self.window.table.rowCount()):
