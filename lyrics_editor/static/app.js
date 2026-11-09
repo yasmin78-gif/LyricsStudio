@@ -87,6 +87,7 @@ function renderForm() {
   $('rowStatus').textContent = r.deleted ? 'Ausgeblendet' : statuses[r.status];
   $('rowStatus').className = 'status-pill ' + r.status;
   $('suggestion').textContent = r.suggestion ? `Whisper-Vorschlag: ${format(r.suggestion.start)}–${format(r.suggestion.end)} · nicht automatisch bestätigt` : 'Manuell angelegte Passage · ohne feste Songstruktur';
+  if (r.suggestion && r.review_reasons?.length) $('suggestion').textContent += ' · ' + r.review_reasons.join(' ');
   $('remove').textContent = r.deleted ? 'Wiederherstellen' : 'Aus Entwurf entfernen';
   $('acknowledge').checked = false; $('allowOverlap').checked = false;
   formDirty = false; updateTiming(); controls(); draw();

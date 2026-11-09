@@ -36,7 +36,11 @@ def filter_value(value):
     return ''.join('\\' + c if c in "\\'[],;" else c for c in first)
 
 
-def parse_srt(text, duration):
+def parse_srt(text, duration, warnings=None):
+    """Clip ASR hypotheses to real audio; retain diagnostics for manual review."""
+    if not math.isfinite(duration) or duration <= 0:
+        raise ValueError('Die Audiodatei enthält kein abspielbares Audio.')
+    warnings = warnings if warnings is not None else []
     result = []
     text = text.lstrip('\ufeff').replace('\r\n', '\n').strip()
     if not text:
@@ -60,20 +64,24 @@ def parse_srt(text, duration):
             times.append(h * 3600 + m * 60 + s + ms / 1000)
         start, end = times
         wording = '\n'.join(lines).strip()
-        if not wording or len(wording) > 4000 or start >= duration or end <= start:
+        if not wording or len(wording) > 4000 or end <= start:
             raise ValueError('Eine erkannte Passage hat ungültigen Text oder ungültige Zeiten.')
-        if end > duration + 0.1:
-            raise ValueError('Eine erkannte Passage liegt hinter dem Audioende.')
+        if start >= duration:
+            warnings.append((None, f'Whisper-Passage ab {start:.3f} s liegt vollständig hinter dem Audioende und wurde ausgelassen.'))
+            continue
+        if end > duration:
+            warnings.append((len(result), f'Whisper-Endzeit {end:.3f} s wurde auf das Audioende {duration:.3f} s begrenzt. Bitte am Audio prüfen.'))
         result.append((start, min(end, duration), wording))
     return result
 
 
-def make_document(audio, segments, reference_text=''):
+def make_document(audio, segments, reference_text='', segment_warnings=()):
     audio = Path(audio).resolve()
     with wave.open(str(audio), 'rb') as stream:
         duration = stream.getnframes() / stream.getframerate()
     with audio.open('rb') as stream:
         digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+    notes = dict((index, reason) for index, reason in segment_warnings if index is not None)
     recognized = []
     for index, (start, end, text) in enumerate(segments, 1):
         a, b = frame_interval(start, end, 24)
@@ -84,7 +92,8 @@ def make_document(audio, segments, reference_text=''):
             manual_text_confirmation=False, wording_status='unresolved', reference_ids=[],
             hypothesis_repeat_of=None, alignment_status='not_run', timing=unresolved,
             asr_segment_timing=dict(start_time=start, end_time=end, start_frame=a, end_frame=b),
-            review_reasons=['Automatisch erkannt: Wortlaut und Zeitgrenzen am Audio prüfen.']))
+            review_reasons=['Automatisch erkannt: Wortlaut und Zeitgrenzen am Audio prüfen.']
+                + ([notes[index - 1]] if index - 1 in notes else [])))
     doc = dict(schema_version='2.0', workflow_status='needs_review', fps=24,
         audio=dict(path=str(audio), sha256=digest, duration_seconds=duration),
         original_lyrics=dict(evidence_role='reference_only_never_assumed_transcript',
@@ -185,12 +194,17 @@ def prepare_project(project, settings, cancel=None, report=lambda label, percent
                 transcript = stage / 'transcript.srt'
                 if not transcript.is_file():
                     raise ValueError('Whisper hat keine Textpassagen gefunden. Bitte Aufnahme und Sprache prüfen.')
-                segments = parse_srt(transcript.read_text(encoding='utf-8-sig'), duration)
+                warnings = []
+                segments = parse_srt(transcript.read_text(encoding='utf-8-sig'), duration, warnings)
+                if warnings:
+                    with (stage / 'processing.log').open('a', encoding='utf-8') as log:
+                        for _, reason in warnings:
+                            log.write('\nLyrics Studio: ' + reason + '\n')
                 if not segments:
                     raise ValueError('Whisper hat keine Textpassagen gefunden. Bitte Aufnahme und Sprache prüfen.')
                 reference_path = project.path('reference.txt')
                 reference_text = reference_path.read_text(encoding='utf-8') if reference_path.exists() else ''
-                doc = make_document(audio, segments, reference_text)
+                doc = make_document(audio, segments, reference_text, warnings)
                 if cancel.is_set():
                     raise Cancelled('Verarbeitung abgebrochen.')
                 final_audio = project.path('audio.wav')
@@ -200,7 +214,7 @@ def prepare_project(project, settings, cancel=None, report=lambda label, percent
                 shutil.copyfile(transcript, project.path('whisper.srt'))
                 shutil.copyfile(stage / 'processing.log', project.path('processing.log'))
                 project.update(status='ready', error=None, duration_seconds=duration,
-                               source_count=len(segments))
+                               source_count=len(segments), preparation_warnings=[reason for _, reason in warnings])
                 report('Bereit für die Bearbeitung', 100)
         except Exception as exc:
             project.update(status='cancelled' if isinstance(exc, Cancelled) else 'error', error=str(exc))

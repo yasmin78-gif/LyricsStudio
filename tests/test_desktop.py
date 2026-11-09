@@ -149,6 +149,25 @@ class ProjectTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             srt_document(store.document(), float('nan'))
 
+    def test_srt_end_overshoot_is_clipped_and_marked_for_review(self):
+        warnings = []
+        segments = parse_srt('1\n00:00:02,000 --> 00:00:05,000\nLast words', 3, warnings)
+        self.assertEqual(segments, [(2, 3, 'Last words')])
+        doc = make_document(self.audio, segments, segment_warnings=warnings)
+        row = doc['recognized_occurrences'][0]
+        self.assertIn('begrenzt', row['review_reasons'][1])
+        self.assertFalse(row['timing']['manual_confirmation'])
+        self.assertEqual(doc['confirmed_occurrences'], [])
+        self.assertEqual(row['asr_segment_timing']['end_time'], 3)
+
+    def test_srt_outside_audio_does_not_discard_valid_passages(self):
+        warnings = []
+        text = '1\n00:00:03,000 --> 00:00:04,000\nOutside\n\n2\n00:00:00,200 --> 00:00:05,000\nInside'
+        self.assertEqual(parse_srt(text, 3, warnings), [(0.2, 3, 'Inside')])
+        self.assertIsNone(warnings[0][0])
+        self.assertEqual(warnings[1][0], 0)
+        self.assertEqual(parse_srt('1\n00:00:04,000 --> 00:00:05,000\nOutside', 3), [])
+
     def test_srt_parser_rejects_invalid_timing(self):
         self.assertEqual(parse_srt('1\n00:00:00,200 --> 00:00:01,800\nTest\n', 3), [(0.2, 1.8, 'Test')])
         for text in ['1\n00:00:02,000 --> 00:00:01,000\nText', 'bad output', '1\n00:99:00,000 --> 01:00:00,000\nText']:

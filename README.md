@@ -4,10 +4,10 @@ Lokale Desktop-Anwendung für Songtexte und ihr Timing: Songs importieren, Whisp
 
 ## Windows herunterladen
 
-**Aktuelle Version: 0.6.2 · Windows x64**
+**Aktuelle Version: 0.6.3 · Windows x64**
 
-- [Installer herunterladen](https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.2/LyricsStudio-0.6.2-Windows-x64-Setup.exe)
-- [Alle Downloads, portable ZIP, Prüfsummen und Quellen](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.2)
+- [Installer herunterladen](https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.3/LyricsStudio-0.6.3-Windows-x64-Setup.exe)
+- [Alle Downloads, portable ZIP, Prüfsummen und Quellen](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.3)
 
 Der Installer installiert nur für den aktuellen Benutzer, ohne Administratorrechte. Python und der eingebettete Editor sind enthalten. Für die portable Ausgabe das vollständige ZIP entpacken und `LyricsStudio.exe` starten. Bei der Deinstallation bleiben persönliche Projekte und Einstellungen erhalten.
 

@@ -1,6 +1,6 @@
 # Windows-Release bauen
 
-Version 0.6.2 wurde unter Windows 11 x64 mit Python 3.13.15 gebaut. macOS/Linux
+Version 0.6.3 wurde unter Windows 11 x64 mit Python 3.13.15 gebaut. macOS/Linux
 sind bisher keine abgenommenen Releaseziele. Der Installer ist mit Inno Setup
 7.1.0 gebaut. Der Quellcode des Programms ist MIT-lizenziert.
 
@@ -23,7 +23,7 @@ Versionen, Quell-URLs und SHA-256-Prüfsummen. Die Archivnamen und Prüfsummen g
 die bereits geprüfte Manifestversion vergleichen; bei Abweichungen vor dem
 Veröffentlichen die Ursache klären. Die Bibliotheken sind nicht von uns geändert.
 
-Bei unveränderten Bibliotheken wie in 0.6.2 können die passenden Quellen des Releases [v0.6.0](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.0) weiterverwendet werden. Dann im neuen Release ausdrücklich auf diese Quellen und `legal/SOURCES.json` verweisen.
+Bei unveränderten Bibliotheken wie in 0.6.3 können die passenden Quellen des Releases [v0.6.0](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.0) weiterverwendet werden. Dann im neuen Release ausdrücklich auf diese Quellen und `legal/SOURCES.json` verweisen.
 
 Bei neuen Bibliotheksversionen die vollständigen Qt-/PySide-Quellarchive unter `dist/upstream-sources` zusammen
 mit dem Installer und der portablen ZIP beim Release veröffentlichen. Die Quellen
@@ -37,8 +37,8 @@ Builddateien erlauben den vollständigen Neubau ohne Signatur-/Aktivierungszwang
 
 ```powershell
 .venv/Scripts/python -B -m unittest discover -s tests -q
-.venv/Scripts/python -m PyInstaller --noconfirm --distpath dist/v0.6.2 LyricsStudio.spec
-.venv/Scripts/python tools/audit_bundle.py dist/v0.6.2/LyricsStudio dist/release-v0.6.2/runtime-manifest.json
+.venv/Scripts/python -m PyInstaller --noconfirm --distpath dist/v0.6.3 LyricsStudio.spec
+.venv/Scripts/python tools/audit_bundle.py dist/v0.6.3/LyricsStudio dist/release-v0.6.3/runtime-manifest.json
 ```
 
 `LyricsStudio.spec` bindet Lizenztexte und die README ein. `bundle_policy.py`
@@ -57,7 +57,7 @@ Danach Installer in einen separaten Testordner installieren, `LyricsStudio.exe
 --check` und `--check-editor --library PATH` mit einer synthetischen Bibliothek
 ausführen. Auch die Deinstallation und das Beibehalten von Projektdateien prüfen.
 Keine echten Songs für Pakettests verwenden. Das gesamte Programmverzeichnis
-als `LyricsStudio-0.6.2-Windows-x64-Portable.zip` packen. Für alle Releaseassets
+als `LyricsStudio-0.6.3-Windows-x64-Portable.zip` packen. Für alle Releaseassets
 SHA-256-Prüfsummen erzeugen. Das Paket ist derzeit nicht codesigniert.
 
 ## Veröffentlichung
@@ -66,7 +66,7 @@ SHA-256-Prüfsummen erzeugen. Das Paket ist derzeit nicht codesigniert.
    ist eine ergänzende Mustersuche, keine Garantie auf Geheimnisfreiheit.
 2. Arbeitsbaum/Diff und vollständiges Runtime-Manifest prüfen. Keine Modelle,
    Audiodateien, Nutzerdaten, Einstellungen oder Zugangsdaten veröffentlichen.
-3. Quellcode committen und Tag `v0.6.2` exakt auf den getesteten Stand setzen.
+3. Quellcode committen und Tag `v0.6.3` exakt auf den getesteten Stand setzen.
 4. Zunächst einen GitHub-Releaseentwurf anlegen. Installer, portable ZIP,
    Runtime-Manifest, Lizenz-/Quellenhinweise, Prüfsummen und alle Quellarchive
    hochladen. Erst nach erfolgreicher Vollständigkeitsprüfung veröffentlichen.
