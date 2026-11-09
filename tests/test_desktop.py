@@ -124,6 +124,28 @@ class ProjectTests(unittest.TestCase):
         self.assertEqual(self.audio.read_bytes(), before)
         self.assertFalse(project.data.exists())
 
+    def test_preparation_passes_selected_queue_to_ffmpeg(self):
+        model = self.root / 'model.bin'
+        model.write_bytes(b'synthetic')
+        for value, expected in [(20, 20), ('30', 30), ('bad', 20)]:
+            with self.subTest(value=value):
+                project = self.library.create('Queue test', self.audio)
+                commands = []
+                def fake_process(command, cwd, *args):
+                    commands.append(command)
+                    (cwd / 'processing.log').touch()
+                    if command[-1] != '-':
+                        shutil.copyfile(self.audio, cwd / 'audio.wav')
+                    else:
+                        (cwd / 'transcript.srt').write_text('1\n00:00:00,200 --> 00:00:01,800\nSynthetic')
+                with patch('lyrics_studio.processing.tool_path', return_value='ffmpeg'), patch('lyrics_studio.processing.subprocess.run') as capability, patch('lyrics_studio.processing.run_process', side_effect=fake_process):
+                    capability.return_value.stdout = 'Transcribe audio'
+                    capability.return_value.stderr = ''
+                    prepare_project(project, {'model': str(model), 'whisper_queue': value})
+                self.assertTrue(project.ready)
+                command = commands[-1]
+                self.assertIn(f':queue={expected}:', command[command.index('-af') + 1])
+
     def test_cancel_terminates_child_process(self):
         cancel = threading.Event()
         timer = threading.Timer(0.25, cancel.set)

@@ -1,8 +1,8 @@
 #ifndef AppVersion
-  #define AppVersion "0.6.3"
+  #define AppVersion "0.6.4"
 #endif
 #ifndef BundleDir
-  #define BundleDir "..\dist\v0.6.3\LyricsStudio"
+  #define BundleDir "..\dist\v0.6.4\LyricsStudio"
 #endif
 [Setup]
 AppId={{3B2DDE8A-F81E-49F5-89E9-5A747A86305F}

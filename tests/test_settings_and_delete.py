@@ -47,6 +47,21 @@ class SettingsAndDeleteTests(unittest.TestCase):
         self.assertEqual(chooser_start('', fallback=self.root), str(self.root))
         self.assertIsNone(existing_file('relative.bin'))
 
+    def test_queue_choice_is_saved_and_restored(self):
+        dialog = SettingsDialog(self.settings, None)
+        self.assertEqual(dialog.whisper_queue.currentData(), 20)
+        dialog.whisper_queue.setCurrentIndex(dialog.whisper_queue.findData(30))
+        window = Window(self.library.root, self.settings, start_updates=False)
+        try:
+            with patch('lyrics_studio.app.SettingsDialog', return_value=dialog), patch.object(dialog, 'exec', return_value=dialog.DialogCode.Accepted):
+                window.configure()
+            reopened = SettingsDialog(self.settings, None)
+            self.assertEqual(reopened.whisper_queue.currentData(), 30)
+            reopened.close()
+        finally:
+            dialog.close()
+            window.close()
+
     def test_model_discovery_and_selection(self):
         model = self.root / 'ggml-small.bin'
         model.write_bytes(b'synthetic')

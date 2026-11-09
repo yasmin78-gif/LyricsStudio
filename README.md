@@ -4,10 +4,10 @@ Lokale Desktop-Anwendung für Songtexte und ihr Timing: Songs importieren, Whisp
 
 ## Windows herunterladen
 
-**Aktuelle Version: 0.6.3 · Windows x64**
+**Aktuelle Version: 0.6.4 · Windows x64**
 
-- [Installer herunterladen](https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.3/LyricsStudio-0.6.3-Windows-x64-Setup.exe)
-- [Alle Downloads, portable ZIP, Prüfsummen und Quellen](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.3)
+- [Installer herunterladen](https://github.com/yasmin78-gif/LyricsStudio/releases/download/v0.6.4/LyricsStudio-0.6.4-Windows-x64-Setup.exe)
+- [Alle Downloads, portable ZIP, Prüfsummen und Quellen](https://github.com/yasmin78-gif/LyricsStudio/releases/tag/v0.6.4)
 
 Der Installer installiert nur für den aktuellen Benutzer, ohne Administratorrechte. Python und der eingebettete Editor sind enthalten. Für die portable Ausgabe das vollständige ZIP entpacken und `LyricsStudio.exe` starten. Bei der Deinstallation bleiben persönliche Projekte und Einstellungen erhalten.
 
@@ -22,6 +22,8 @@ Diese beiden Komponenten sind **nicht im Download enthalten**. Die Buttons unter
 1. [FFmpeg für Windows von gyan.dev](https://www.gyan.dev/ffmpeg/builds/) herunterladen: einen **Full Build mit Whisper-Filter** auswählen und entpacken. Nicht jede FFmpeg-Version unterstützt Whisper. Die [FFmpeg-Downloadseite](https://ffmpeg.org/download.html) nennt weitere Anbieter.
 2. Ein [GGML-Whisper-Modell](https://huggingface.co/ggerganov/whisper.cpp/tree/main) herunterladen. Als Einstieg eignet sich `ggml-small.bin` (mehrsprachig, ungefähr 466 MiB). Die Dateiendung muss `.bin` sein; keine CoreML-ZIP oder PyTorch-Datei auswählen. Größere Modelle benötigen mehr Speicher und Rechenzeit.
 3. Unter Einstellungen „Erneut nach verfügbaren Einträgen suchen“ wählen. Falls nötig unter „Weitere Installation hinzufügen“ einmalig `bin/ffmpeg.exe` und die Modelldatei hinzufügen. Dann beide Einträge auswählen und speichern.
+
+Unter **Abschnittslänge** stehen 20 Sekunden (bisherige Verarbeitung) und 30 Sekunden (mehr Zusammenhang) zur Wahl. 30 Sekunden können bei Gesang mehr Wörter erfassen; bessere Ergebnisse sind nicht für jeden Song garantiert. Die Auswahl gilt für neue Songvorbereitungen und verändert vorhandene Projekte nicht. Text und Zeitmarken weiterhin prüfen.
 4. Bei Problemen mit der Grafikkarte die GPU-Option ausschalten.
 
 Bei Bedarf die Unterstützung mit `ffmpeg -hide_banner -h filter=whisper` prüfen. Die Anwendung prüft sie ebenfalls vor der Song-Verarbeitung. Die externe FFmpeg-Version und Modelle unterliegen den jeweiligen Anbieter- und Open-Source-Lizenzen.

@@ -28,6 +28,7 @@ from .embedded import EditorView
 from .resolve_export import export_package, lua_string
 from .legal_info import FFMPEG_URL, MODEL_URL
 from .about import AboutDialog
+from .processing import whisper_queue
 from .settings_paths import chooser_start, existing_file, model_candidates, ffmpeg_candidates, resource_name
 
 STATUS = {'new': 'Neu', 'processing': 'Verarbeitung unterbrochen', 'ready': 'Bereit zur Bearbeitung',
@@ -121,12 +122,19 @@ class SettingsDialog(QDialog):
         self.preferred_model = settings.value('model', os.environ.get('LYRICS_STUDIO_MODEL', ''))
         self.known_ffmpeg = settings.value('ffmpeg_locations', [], type=list)
         self.known_models = settings.value('model_locations', [], type=list)
+        self.whisper_queue = QComboBox()
+        self.whisper_queue.addItem('20 Sekunden · bisherige Verarbeitung', 20)
+        self.whisper_queue.addItem('30 Sekunden · mehr Zusammenhang', 30)
+        self.whisper_queue.setCurrentIndex(self.whisper_queue.findData(
+            whisper_queue(settings.value('whisper_queue', 20))))
+        self.whisper_queue.setToolTip('Audioabschnitte für die Erkennung. 30 Sekunden können fehlende Wörter reduzieren; Zeitmarken weiter prüfen. Gilt für neue Songvorbereitungen.')
         self.gpu = QCheckBox('Grafikkarte verwenden')
         self.gpu.setChecked(settings.value('gpu', True, type=bool))
         self.startup_updates = QCheckBox('Beim Programmstart nach Updates suchen')
         self.startup_updates.setChecked(settings.value('check_updates_startup', True, type=bool))
         form.addRow('Audio-Verarbeitung', self.ffmpeg)
         form.addRow('Whisper-Modell', self.model)
+        form.addRow('Abschnittslänge', self.whisper_queue)
         form.addRow('', self.gpu)
         layout.addLayout(form)
         self.availability = label('', 'muted')
@@ -626,6 +634,7 @@ class Window(QMainWindow):
             self.settings.setValue('ffmpeg_locations', dialog.known_ffmpeg)
             self.settings.setValue('model_locations', dialog.known_models)
             self.settings.setValue('gpu', dialog.gpu.isChecked())
+            self.settings.setValue('whisper_queue', dialog.whisper_queue.currentData())
             self.settings.setValue('check_updates_startup', dialog.startup_updates.isChecked())
             self.settings.sync()
 
@@ -669,7 +678,7 @@ class Window(QMainWindow):
                 self.message.setText('Projekt angelegt. Wähle in den Einstellungen das Whisper-Modell und starte dann „Song vorbereiten“.')
                 return
         options = {key: self.settings.value(key, default, type=bool) if key == 'gpu' else self.settings.value(key, default)
-                   for key, default in [('ffmpeg', 'ffmpeg'), ('model', os.environ.get('LYRICS_STUDIO_MODEL', '')), ('gpu', True)]}
+                   for key, default in [('ffmpeg', 'ffmpeg'), ('model', os.environ.get('LYRICS_STUDIO_MODEL', '')), ('gpu', True), ('whisper_queue', 20)]}
         self.worker = ImportWorker(project, options, self)
         self.processing_id = project.info['id']
         self.worker.progress.connect(self.on_progress)

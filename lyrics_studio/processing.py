@@ -29,6 +29,11 @@ def tool_path(value='ffmpeg'):
     return str(Path(found).resolve())
 
 
+def whisper_queue(value=20):
+    """Accept only supported queue sizes, including values stored by QSettings."""
+    return 30 if str(value) == '30' else 20
+
+
 def filter_value(value):
     """Escape both FFmpeg filter option and filtergraph parsing levels."""
     value = str(value).replace('\\', '/')
@@ -186,8 +191,9 @@ def prepare_project(project, settings, cancel=None, report=lambda label, percent
                     model_arg = Path(os.path.relpath(model, stage)).as_posix()
                 except ValueError:  # Windows: model on a different drive
                     model_arg = model.as_posix()
+                queue = whisper_queue(settings.get('whisper_queue', 20))
                 audio_filter = (f'whisper=model={filter_value(model_arg)}:language={project.info["language"]}'
-                    f':translate=false:queue=20:use_gpu={str(bool(settings.get("gpu", True))).lower()}'
+                    f':translate=false:queue={queue}:use_gpu={str(bool(settings.get("gpu", True))).lower()}'
                     ':destination=transcript.srt:format=srt:max_len=120')
                 run_process(common + ['-i', str(audio), '-vn', '-af', audio_filter, '-f', 'null', '-'],
                     stage, cancel, report, 'Whisper erkennt Textpassagen …', duration)
